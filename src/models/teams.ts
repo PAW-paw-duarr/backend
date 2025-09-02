@@ -12,14 +12,17 @@ class TeamsClass {
   @prop({ required: true, type: String })
   public name!: string;
 
-  @prop({ required: true, type: mongoose.Schema.Types.ObjectId })
-  public leader_id!: mongoose.Types.ObjectId;
+  @prop({ required: true, type: String })
+  public leader_email!: string;
 
   @prop({ required: true, enum: CategoryCapstone, type: String })
   public category!: CategoryCapstone;
 
-  @prop({ type: mongoose.Schema.Types.ObjectId })
+  @prop({ type: mongoose.Types.ObjectId })
   public title_id?: mongoose.Types.ObjectId;
+
+  @prop({ type: Number })
+  public period?: number;
 
   public static async findById(this: ReturnModelType<typeof TeamsClass>, id: string) {
     return this.findOne({ _id: id }).lean().exec();

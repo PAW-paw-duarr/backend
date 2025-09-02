@@ -8,10 +8,10 @@ import {
 
 @modelOptions({ schemaOptions: { collection: "submissions" } })
 class SubmissionsClass {
-  @prop({ required: true, type: mongoose.Schema.Types.ObjectId })
+  @prop({ required: true, type: mongoose.Types.ObjectId })
   public team_id!: mongoose.Types.ObjectId;
 
-  @prop({ required: true, type: mongoose.Schema.Types.ObjectId })
+  @prop({ required: true, type: mongoose.Types.ObjectId })
   public team_target_id!: mongoose.Types.ObjectId;
 
   @prop({ required: true, type: String })
