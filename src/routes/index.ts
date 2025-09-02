@@ -1,8 +1,10 @@
+import type { Response } from "express";
 import express from "express";
-import { getHome } from "../controllers/indexControllers";
 
 const router = express.Router();
 
-router.get("/", getHome);
+router.get("/", async (_, res: Response) => {
+  res.send("Hello from the index route!");
+});
 
 export default router;
