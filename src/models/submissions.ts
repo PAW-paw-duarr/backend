@@ -17,6 +17,9 @@ class SubmissionsClass {
   @prop({ required: true, type: String })
   public grand_design_url!: string;
 
+  @prop({ required: true, type: Boolean, default: false })
+  public accepted!: boolean;
+
   public static async findById(this: ReturnModelType<typeof SubmissionsClass>, id: string) {
     return this.findOne({ _id: id }).lean().exec();
   }
