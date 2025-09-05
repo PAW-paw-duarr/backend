@@ -1,7 +1,12 @@
 import express from "express";
 import { z } from "zod";
-import { serviceSigninPassword, serviceSignupPassword } from "~/services/authService";
-import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpError";
+import { createUserSession, destroyUserSession, oauth2Client } from "~/lib/auth";
+import {
+  serviceFindOrCreateGoogleUser,
+  serviceSigninPassword,
+  serviceSignupPassword,
+} from "~/services/authService";
+import { httpBadRequestError, sendHttpError } from "~/utils/httpError";
 
 const router = express.Router();
 
@@ -25,21 +30,8 @@ router.post("/signin/password", async (req, res) => {
     return;
   }
 
-  req.session.regenerate((err) => {
-    if (err) {
-      sendHttpError({ res, error: httpInternalServerError });
-      return;
-    }
-    req.session.user = resp.data;
-    req.session.save((err) => {
-      if (err) {
-        sendHttpError({ res, error: httpInternalServerError });
-        return;
-      }
-      res.json(resp.data);
-      return;
-    });
-  });
+  createUserSession(req, res, resp.data);
+  return;
 });
 
 const passwordSignUpSchema = z.object({
@@ -72,15 +64,33 @@ router.post("/signup/password", async (req, res) => {
 });
 
 router.get("/signout", (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      sendHttpError({ res, error: httpInternalServerError });
-      return;
-    }
-    res.clearCookie("sess");
-    res.json({ message: "Signed out successfully" });
-    return;
+  destroyUserSession(req, res);
+  return;
+});
+
+router.get("/google", (_, res) => {
+  const googleAuthUrl = oauth2Client.generateAuthUrl({
+    scope: ["profile", "email"],
   });
+  res.redirect(302, googleAuthUrl);
+});
+
+router.get("/google/callback", async (req, res) => {
+  const code = req.query.code as string;
+  if (!code) {
+    sendHttpError({ res, error: httpBadRequestError, message: "Missing code parameter" });
+    return;
+  }
+
+  const resp = await serviceFindOrCreateGoogleUser(code);
+
+  if (resp.success === undefined) {
+    sendHttpError({ res, error: resp.error, message: resp.data });
+    return;
+  }
+
+  createUserSession(req, res, resp.data);
+  return;
 });
 
 export default router;

@@ -53,6 +53,20 @@ class UserClass {
     await user.save();
     return user;
   }
+
+  public static async createOrFindUsergoogle(
+    this: ReturnModelType<typeof UserClass>,
+    params: createUserGoogleParams,
+  ): Promise<UserClass> {
+    const { name, email, google_id } = params;
+    const existingUser = await this.findOne({ email });
+    if (existingUser) {
+      return existingUser;
+    }
+    const user = new this({ name, email, google_id });
+    await user.save();
+    return user;
+  }
 }
 
 export const UserModel = getModelForClass(UserClass);
@@ -61,4 +75,10 @@ export interface createUserPasswordParams {
   email: string;
   password: string;
   name: string;
+}
+
+interface createUserGoogleParams {
+  email?: string;
+  name?: string;
+  google_id: string;
 }
