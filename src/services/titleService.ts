@@ -7,14 +7,14 @@ export async function serviceGetAllTitles(): retService<
 > {
   const data = await TitleModel.getAllData();
 
-  const titles: components["schemas"]["data-title"][] = data.map((item) => ({
-    id: item.id,
-    desc: item.desc,
-    description: item.description,
-    photo_url: item.photo_url,
-    proposal_url: item.proposal_url,
-    title: item.title,
-  }));
+  const titles: components["schemas"]["data-title-short"][] = data.map(
+    (item): components["schemas"]["data-title-short"] => ({
+      id: item.id,
+      title: item.title,
+      desc: item.desc,
+      photo_url: item.photo_url,
+    }),
+  );
 
   return { success: 200, data: titles };
 }
