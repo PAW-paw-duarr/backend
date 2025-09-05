@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { logger } from "~/lib/logger";
 
 const envSchema = z.object({
   MONGO_URL: z.url("Invalid MongoDB URL format"),
@@ -28,10 +29,10 @@ export function validateEnv(): boolean {
     envSchema.parse(env);
     return true;
   } catch (error) {
-    console.error("Environment validation failed:");
+    logger.error("Environment validation failed:");
     if (error instanceof z.ZodError) {
       error.issues.forEach((err: z.core.$ZodIssue) => {
-        console.error(`  • ${err.path.join(".")}: ${err.message}`);
+        logger.error(`  • ${err.path.join(".")}: ${err.message}`);
       });
     }
     return false;

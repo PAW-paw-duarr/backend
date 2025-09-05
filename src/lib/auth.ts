@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import session from "express-session";
 import { OAuth2Client } from "google-auth-library";
+import { UserModel } from "~/models/users";
 import { isProd } from "~/utils/constants";
 import env from "~/utils/env";
 import { httpInternalServerError, httpUnauthorizedError, sendHttpError } from "~/utils/httpError";
@@ -29,19 +30,41 @@ export const oauth2Client = new OAuth2Client({
   redirectUri: `${env.URL.baseUrl}/api/auth/google/callback`,
 });
 
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
   if (req.session?.userId) {
+    const user = await UserModel.findById(req.session.userId);
+    if (!user) {
+      sendHttpError({ res, error: httpUnauthorizedError, message: "Unauthorized" });
+      return;
+    }
+    res.locals.user = user;
     return next();
   }
   sendHttpError({ res, error: httpUnauthorizedError, message: "Unauthorized" });
   return;
 }
 
-export function createUserSession(
-  req: Request,
-  res: Response,
-  user: components["schemas"]["data-user"],
-) {
+export async function authAdminMiddleware(req: Request, res: Response, next: NextFunction) {
+  if (req.session?.userId) {
+    const user = await UserModel.findById(req.session.userId);
+    if (!user) {
+      sendHttpError({ res, error: httpUnauthorizedError, message: "Unauthorized" });
+      return;
+    }
+    res.locals.user = user;
+    return next();
+  }
+  sendHttpError({ res, error: httpUnauthorizedError, message: "Unauthorized" });
+  return;
+}
+
+type createUserSessionParams = {
+  req: Request;
+  res: Response;
+  user: components["schemas"]["data-user"];
+  redirectTo?: string;
+};
+export function createUserSession({ req, res, user, redirectTo }: createUserSessionParams) {
   req.session.regenerate((err) => {
     if (err) {
       sendHttpError({ res, error: httpInternalServerError });
@@ -53,13 +76,21 @@ export function createUserSession(
         sendHttpError({ res, error: httpInternalServerError });
         return;
       }
+      if (redirectTo) {
+        res.redirect(redirectTo);
+        return;
+      }
       res.json(user);
       return;
     });
   });
 }
 
-export function destroyUserSession(req: Request, res: Response) {
+type destroyUserSessionParams = {
+  req: Request;
+  res: Response;
+};
+export function destroyUserSession({ req, res }: destroyUserSessionParams) {
   req.session.destroy((err) => {
     if (err) {
       sendHttpError({ res, error: httpInternalServerError });

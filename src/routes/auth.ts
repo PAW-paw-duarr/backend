@@ -30,7 +30,7 @@ router.post("/signin/password", async (req, res) => {
     return;
   }
 
-  createUserSession(req, res, resp.data);
+  createUserSession({ req, res, user: resp.data });
   return;
 });
 
@@ -64,7 +64,7 @@ router.post("/signup/password", async (req, res) => {
 });
 
 router.get("/signout", (req, res) => {
-  destroyUserSession(req, res);
+  destroyUserSession({ req, res });
   return;
 });
 
@@ -89,7 +89,7 @@ router.get("/google/callback", async (req, res) => {
     return;
   }
 
-  createUserSession(req, res, resp.data);
+  createUserSession({ req, res, user: resp.data, redirectTo: "/" });
   return;
 });
 

@@ -26,7 +26,7 @@ export async function serviceSigninPassword(
   }
 
   const user: components["schemas"]["data-user"] = {
-    id: data.id,
+    id: data._id.toString(),
     name: data.name,
     email: data.email,
     cv_url: data.cv_url,

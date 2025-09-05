@@ -8,7 +8,7 @@ import {
 
 @modelOptions({ schemaOptions: { collection: "users" } })
 class UserClass {
-  id!: string;
+  public id!: string;
 
   @prop({ required: true, type: String })
   public name!: string;
@@ -27,6 +27,9 @@ class UserClass {
 
   @prop({ type: String })
   public cv_url?: string;
+
+  @prop({ type: Boolean, default: false })
+  public is_admin!: boolean;
 
   public static async findById(this: ReturnModelType<typeof UserClass>, id: string) {
     return this.findOne({ _id: id }).lean().exec();
@@ -70,6 +73,7 @@ class UserClass {
 }
 
 export const UserModel = getModelForClass(UserClass);
+export type UserDocument = UserClass;
 
 export interface createUserPasswordParams {
   email: string;
