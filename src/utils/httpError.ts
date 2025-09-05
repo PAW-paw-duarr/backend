@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import type { components } from "~/lib/api/schema";
+import type { components } from "../lib/api/schema";
 
 export const httpBadRequestError: components["schemas"]["DefaultErrors"] = {
   status: 400,
@@ -247,20 +247,6 @@ export const httpNetworkAuthenticationRequiredError: components["schemas"]["Defa
   message: "Network authentication required",
 };
 
-type HttpErrorResponse = {
-  res: Response;
-  error: components["schemas"]["DefaultErrors"];
-  message?: string;
-  detail?: Record<string, unknown>;
-};
-
-export function sendHttpError({ res, error, detail, message }: HttpErrorResponse) {
-  const isServerError = error.status >= 500 && error.status < 600;
-  const err: components["schemas"]["DefaultErrors"] = {
-    status: error.status,
-    error: error.error ?? "",
-    message: isServerError ? error.message : (message ?? ""),
-    ...(detail !== undefined && { detail }),
-  };
-  res.status(error.status).json(err);
+export function sendHttpError(res: Response, error: components["schemas"]["DefaultErrors"]) {
+  res.status(error.status).json(error);
 }

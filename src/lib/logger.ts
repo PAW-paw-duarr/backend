@@ -1,9 +1,9 @@
 import pino from "pino";
-import httpPino from "pino-http";
-import { isProd } from "~/utils/constants";
+
+const isDevelopment = process.env.NODE_ENV === "development";
 
 export const logger = pino({
-  level: process.env.LOG_LEVEL || (isProd ? "info" : "debug"),
+  level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
   formatters: {
     level: (label) => {
       return { level: label.toUpperCase() };
@@ -13,25 +13,4 @@ export const logger = pino({
     },
   },
   timestamp: pino.stdTimeFunctions.isoTime,
-});
-
-export const httpLogger = httpPino({
-  redact: [
-    "req.headers.authorization",
-    "req.headers.cookie",
-    "req.body.password",
-    'res.headers["set-cookie"]',
-  ],
-  level: "info",
-  serializers: {
-    req: (req) => ({
-      method: req.method,
-      url: req.url,
-      userAgent: req.headers["user-agent"],
-    }),
-    res: (res) => ({
-      statusCode: res.statusCode,
-    }),
-  },
-  base: {},
 });

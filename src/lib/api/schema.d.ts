@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-  "/title": {
+  "/api/title": {
     parameters: {
       query?: never;
       header?: never;
@@ -25,10 +25,14 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    patch?: never;
+    /**
+     * Change Title
+     * @description change title
+     */
+    patch: operations["patch-api-title"];
     trace?: never;
   };
-  "/title/{id}": {
+  "/api/title/{id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -45,14 +49,10 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /**
-     * Change Title
-     * @description change title
-     */
-    patch: operations["patch-api-title"];
+    patch?: never;
     trace?: never;
   };
-  "/title/{id}/take": {
+  "/api/title/{id}/take": {
     parameters: {
       query?: never;
       header?: never;
@@ -72,7 +72,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/submission": {
+  "/api/submission": {
     parameters: {
       query?: never;
       header?: never;
@@ -86,13 +86,14 @@ export interface paths {
     get: operations["get-api-submission"];
     put?: never;
     post?: never;
-    delete?: never;
+    /** Remove submission */
+    delete: operations["del-api-admin-submission"];
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  "/submission/{id}": {
+  "/api/submission/{id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -112,7 +113,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/submission/response": {
+  "/api/submission/response": {
     parameters: {
       query?: never;
       header?: never;
@@ -132,7 +133,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/team": {
+  "/api/team": {
     parameters: {
       query?: never;
       header?: never;
@@ -152,7 +153,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/team/{id}": {
+  "/api/team/{id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -172,7 +173,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/team/kick": {
+  "/api/team/kick": {
     parameters: {
       query?: never;
       header?: never;
@@ -192,7 +193,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/team/join": {
+  "/api/team/join": {
     parameters: {
       query?: never;
       header?: never;
@@ -212,7 +213,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/user": {
+  "/api/user": {
     parameters: {
       query?: never;
       header?: never;
@@ -236,7 +237,7 @@ export interface paths {
     patch: operations["patch-api-user"];
     trace?: never;
   };
-  "/user/{id}": {
+  "/api/user/{id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -256,7 +257,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/users": {
+  "/api/admin/users": {
     parameters: {
       query?: never;
       header?: never;
@@ -276,7 +277,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/user/{id}": {
+  "/api/admin/user/{id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -296,7 +297,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/user": {
+  "/api/admin/user": {
     parameters: {
       query?: never;
       header?: never;
@@ -313,7 +314,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/teams": {
+  "/api/admin/teams": {
     parameters: {
       query?: never;
       header?: never;
@@ -333,7 +334,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/team/{id}": {
+  "/api/admin/team/{id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -353,7 +354,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/batch": {
+  "/api/admin/batch": {
     parameters: {
       query?: never;
       header?: never;
@@ -373,7 +374,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/team": {
+  "/api/admin/team": {
     parameters: {
       query?: never;
       header?: never;
@@ -390,7 +391,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/titles": {
+  "/api/admin/titles": {
     parameters: {
       query?: never;
       header?: never;
@@ -410,7 +411,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/title/{id}": {
+  "/api/admin/title/{id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -430,7 +431,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/submission": {
+  "/api/admin/submission": {
     parameters: {
       query?: never;
       header?: never;
@@ -447,172 +448,41 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/admin/title": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Remove Title */
-    delete: operations["del-api-title-submission"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/signin/password": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Password SignIn */
-    post: operations["get-auth-signin-password"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/signup/password": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Password SignUp */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          /** @example {
-           *       "name": "tes1",
-           *       "email": "tes@mail.com",
-           *       "password": "Admin123!"
-           *     } */
-          "application/json": Record<string, never>;
-        };
-      };
-      responses: {
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["data-user"];
-          };
-        };
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["DefaultErrors"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/signout": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Logout */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": Record<string, never>;
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
     "data-team": {
-      id?: string;
-      name?: string;
-      leader_email?: string;
-      title_id?: string;
+      id: string;
+      name: string;
+      leader_id: string;
+      title_id: string;
       /** @enum {string} */
-      category?:
-        | "Kesehatan"
-        | "Pengelolaan Sampah"
-        | "Smart City"
-        | "Transportasi Ramah Lingkungan";
-      period?: number;
+      category: "Kesehatan" | "Pengelolaan Sampah" | "Smart City" | "Transportasi Ramah Lingkungan";
     };
     "data-team-short": {
-      id?: string;
-      name?: string;
+      id: string;
+      name: string;
       /** @enum {string} */
-      category?:
-        | "Kesehatan"
-        | "Pengelolaan Sampah"
-        | "Smart City"
-        | "Transportasi Ramah Lingkungan";
-      period?: number;
+      category: "Kesehatan" | "Pengelolaan Sampah" | "Smart City" | "Transportasi Ramah Lingkungan";
     };
     "data-user": {
-      id?: string;
-      cv_url?: string;
-      team_id?: string;
-      name?: string;
-      email?: string;
-      google_id?: string;
+      id: string;
+      cv_url: string;
+      team_id: string;
+      name: string;
+      email: string;
+      google_id: string;
     };
     "data-user-short": {
-      id?: string;
-      name?: string;
+      id: string;
+      name: string;
     };
     "data-submission": {
-      id?: string;
-      team_id?: string;
-      grand_design_url?: string;
-      team_target_id?: string;
+      id: string;
+      team_id: string;
+      grand_design_url: string;
+      team_target_id: string;
     };
     "data-submission-short": {
       id?: string;
@@ -620,30 +490,65 @@ export interface components {
       team_target_id?: string;
     };
     "data-title": {
-      id?: string;
-      title?: string;
-      desc?: string;
-      description?: string;
-      photo_url?: string;
-      proposal_url?: string;
+      id: string;
+      title: string;
+      desc: string;
+      description: string;
+      photo_url: string;
+      proposal_url: string;
     };
     "data-title-short": {
-      id?: string;
-      title?: string;
-      desc?: string;
-      photo_url?: string;
-    };
-    "signin-password-body": {
-      email: string;
-      password: string;
+      id: string;
+      title: string;
+      desc: string;
+      photo_url: string;
     };
     DefaultErrors: {
-      status: number;
-      error?: string;
-      message?: string;
-      details?: {
-        [key: string]: unknown;
-      };
+      /** @enum {integer} */
+      status:
+        | 400
+        | 401
+        | 402
+        | 403
+        | 404
+        | 405
+        | 406
+        | 407
+        | 408
+        | 409
+        | 410
+        | 411
+        | 412
+        | 413
+        | 414
+        | 415
+        | 416
+        | 417
+        | 418
+        | 421
+        | 422
+        | 423
+        | 424
+        | 425
+        | 426
+        | 428
+        | 429
+        | 431
+        | 451
+        | 500
+        | 501
+        | 502
+        | 503
+        | 504
+        | 505
+        | 506
+        | 507
+        | 508
+        | 509
+        | 510
+        | 511;
+      error: string;
+      message: string;
     };
   };
   responses: never;
@@ -679,7 +584,7 @@ export interface operations {
           "application/json": components["schemas"]["data-title-short"][];
         };
       };
-      401: {
+      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -690,6 +595,70 @@ export interface operations {
     };
   };
   "post-api-title": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        "multipart/form-data": {
+          /**
+           * Format: binary
+           * @example
+           */
+          photo_file?: string;
+          /**
+           * Format: binary
+           * @example
+           */
+          proposal_file?: string;
+          /** @example  */
+          title?: string;
+          /** @example  */
+          desc?: string;
+          /** @example  */
+          description?: string;
+        };
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["data-title"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+    };
+  };
+  "patch-api-title": {
     parameters: {
       query?: never;
       header?: never;
@@ -780,81 +749,7 @@ export interface operations {
           "application/json": components["schemas"]["data-title"];
         };
       };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-    };
-  };
-  "patch-api-title": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: {
-      content: {
-        "multipart/form-data": {
-          /**
-           * Format: binary
-           * @example
-           */
-          photo_file?: string;
-          /**
-           * Format: binary
-           * @example
-           */
-          proposal_file?: string;
-          /** @example  */
-          title?: string;
-          /** @example  */
-          desc?: string;
-          /** @example  */
-          description?: string;
-        };
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["data-title"];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
       404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      500: {
         headers: {
           [name: string]: unknown;
         };
@@ -957,7 +852,51 @@ export interface operations {
           "application/json": components["schemas"]["data-submission-short"][];
         };
       };
-      401: {
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+    };
+  };
+  "del-api-admin-submission": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        /** @example {
+         *       "id": "123"
+         *     } */
+        "application/json": {
+          id: string;
+        };
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": null;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
         headers: {
           [name: string]: unknown;
         };
@@ -989,14 +928,6 @@ export interface operations {
            *       "grand_design_url": "http://google.com"
            *     } */
           "application/json": components["schemas"]["data-submission"];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
       404: {
@@ -1110,7 +1041,7 @@ export interface operations {
           "application/json": components["schemas"]["data-team"];
         };
       };
-      401: {
+      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -1154,14 +1085,6 @@ export interface operations {
           "application/json": components["schemas"]["data-team"];
         };
       };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
       404: {
         headers: {
           [name: string]: unknown;
@@ -1203,23 +1126,7 @@ export interface operations {
           };
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
       401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -1268,23 +1175,7 @@ export interface operations {
           };
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
       401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -1326,7 +1217,7 @@ export interface operations {
           "application/json": components["schemas"]["data-user"];
         };
       };
-      401: {
+      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -1353,8 +1244,6 @@ export interface operations {
            * @example
            */
           email?: string;
-          /** @example  */
-          password?: string;
           /**
            * Format: binary
            * @example
@@ -1370,30 +1259,6 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["data-user"];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -1415,14 +1280,6 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["data-user"];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
       404: {
@@ -1461,7 +1318,7 @@ export interface operations {
           }[];
         };
       };
-      401: {
+      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -1488,14 +1345,6 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["data-user"];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
       404: {
@@ -1542,22 +1391,6 @@ export interface operations {
           "application/json": components["schemas"]["DefaultErrors"];
         };
       };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
       500: {
         headers: {
           [name: string]: unknown;
@@ -1585,12 +1418,58 @@ export interface operations {
           "application/json": components["schemas"]["data-team-short"][];
         };
       };
-      401: {
+      404: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["DefaultErrors"];
+          "application/json": {
+            /** @enum {integer} */
+            status:
+              | 400
+              | 401
+              | 402
+              | 403
+              | 404
+              | 405
+              | 406
+              | 407
+              | 408
+              | 409
+              | 410
+              | 411
+              | 412
+              | 413
+              | 414
+              | 415
+              | 416
+              | 417
+              | 418
+              | 421
+              | 422
+              | 423
+              | 424
+              | 425
+              | 426
+              | 428
+              | 429
+              | 431
+              | 451
+              | 500
+              | 501
+              | 502
+              | 503
+              | 504
+              | 505
+              | 506
+              | 507
+              | 508
+              | 509
+              | 510
+              | 511;
+            error: string;
+            message: string;
+          };
         };
       };
     };
@@ -1627,14 +1506,6 @@ export interface operations {
            *       ]
            *     } */
           "application/json": components["schemas"]["data-team"];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
       404: {
@@ -1742,22 +1613,6 @@ export interface operations {
           "application/json": components["schemas"]["DefaultErrors"];
         };
       };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
       500: {
         headers: {
           [name: string]: unknown;
@@ -1793,7 +1648,7 @@ export interface operations {
           "application/json": components["schemas"]["data-title-short"][];
         };
       };
-      401: {
+      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -1828,14 +1683,6 @@ export interface operations {
            *       "team_id": "123221"
            *     } */
           "application/json": components["schemas"]["data-title"];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
       404: {
@@ -1882,118 +1729,7 @@ export interface operations {
           "application/json": components["schemas"]["DefaultErrors"];
         };
       };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
       500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-    };
-  };
-  "del-api-title-submission": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: {
-      content: {
-        /** @example {
-         *       "id": "123"
-         *     } */
-        "application/json": {
-          id: string;
-        };
-      };
-    };
-    responses: {
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": null;
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-    };
-  };
-  "get-auth-signin-password": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: {
-      content: {
-        /** @example {
-         *       "email": "email@mail.com",
-         *       "password": "aaa"
-         *     } */
-        "application/json": components["schemas"]["signin-password-body"];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": Record<string, never>;
-        };
-      };
-      400: {
         headers: {
           [name: string]: unknown;
         };
