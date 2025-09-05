@@ -22,7 +22,7 @@ export const httpLogger = httpPino({
     "req.body.password",
     'res.headers["set-cookie"]',
   ],
-  level: "info",
+  level: env.LOG_LEVEL,
   serializers: {
     req: (req) => ({
       method: req.method,
