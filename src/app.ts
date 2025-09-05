@@ -3,7 +3,6 @@ import { httpLogger } from "~/lib/logger";
 import { authMiddleware, sessionMiddleware } from "./lib/auth";
 import authRouter from "./routes/auth";
 import indexRouter from "./routes/index";
-import protectedRouter from "./routes/protected";
 import titleRouter from "./routes/title";
 import { httpInternalServerError, httpNotFoundError, sendHttpError } from "./utils/httpError";
 
@@ -21,7 +20,6 @@ apiRoute.use("/auth", authRouter);
 
 const protectedRoute = express.Router();
 protectedRoute.use(authMiddleware);
-protectedRoute.use("/", protectedRouter);
 protectedRoute.use("/title", titleRouter);
 
 apiRoute.use(protectedRoute);
