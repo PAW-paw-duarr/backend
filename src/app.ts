@@ -1,37 +1,51 @@
-import express from "express";
-import { httpLogger } from "~/lib/logger";
-import { authMiddleware, sessionMiddleware } from "./lib/auth";
-import authRouter from "./routes/auth";
+import cookieParser from "cookie-parser";
+import express, { type NextFunction, type Request, type Response } from "express";
+import createError, { type HttpError } from "http-errors";
+import logger from "pino-http";
+
 import indexRouter from "./routes/index";
 import titleRouter from "./routes/title";
-import { httpInternalServerError, httpNotFoundError, sendHttpError } from "./utils/httpError";
 
 const app = express();
 
-app.use(httpLogger);
+app.use(
+  logger({
+    redact: [
+      "req.headers.authorization",
+      "req.headers.cookie",
+      "req.body.password",
+      'res.headers["set-cookie"]',
+    ],
+    level: "info",
+    serializers: {
+      req: (req) => ({
+        method: req.method,
+        url: req.url,
+        userAgent: req.headers["user-agent"],
+      }),
+      res: (res) => ({
+        statusCode: res.statusCode,
+      }),
+    },
+    base: {},
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(sessionMiddleware);
+app.use(cookieParser());
 
-const apiRoute = express.Router();
-app.use("/api", apiRoute);
-apiRoute.use("/", indexRouter);
-apiRoute.use("/auth", authRouter);
-
-const protectedRoute = express.Router();
-protectedRoute.use(authMiddleware);
-protectedRoute.use("/title", titleRouter);
-
-apiRoute.use(protectedRoute);
+app.use("/", indexRouter);
+app.use("/title", titleRouter);
 
 // catch 404 and forward to error handler
-app.use((_, res) => {
-  return sendHttpError({ res, error: httpNotFoundError, message: "Not Found" });
+app.use((next: NextFunction) => {
+  next(createError(404, "Page not found!"));
 });
 
 // error handler
-app.use((_, res) => {
-  return sendHttpError({ res, error: httpInternalServerError });
+app.use((err: HttpError, _: Request, res: Response) => {
+  res.status(err.status || 500);
+  res.send(err.message);
 });
 
 export default app;

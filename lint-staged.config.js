@@ -5,6 +5,6 @@ export default {
         "biome format . --fix"
     ],
     "*": [
-        "biome format . --write"
+        "biome format --write"
     ]
 }
