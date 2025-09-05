@@ -10,4 +10,5 @@
         "source.organizeImports.biome": "explicit",
         "source.fixAll.biome": "explicit"
     },
+    "biome.enabled": true
 }

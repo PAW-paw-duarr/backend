@@ -8,17 +8,19 @@ import {
 
 @modelOptions({ schemaOptions: { collection: "users" } })
 class UserClass {
+  id!: string;
+
   @prop({ required: true, type: String })
   public name!: string;
 
   @prop({ type: String })
   public google_id?: string;
 
-  @prop({ type: String })
+  @prop({ type: String, unique: true })
   public email?: string;
 
   @prop({ type: String })
-  public password?: number;
+  public password?: string;
 
   @prop({ type: String })
   public team_id?: mongoose.Types.ObjectId;
@@ -35,8 +37,48 @@ class UserClass {
   }
 
   public static async getAllData(this: ReturnModelType<typeof UserClass>) {
-    return this.find({}, { id: 1, name: 1 }).lean().exec();
+    return this.find({}, { _id: 1, name: 1 }).lean().exec();
+  }
+
+  public static async createUserPassword(
+    this: ReturnModelType<typeof UserClass>,
+    params: createUserPasswordParams,
+  ): Promise<UserClass | Error> {
+    const { name, email, password } = params;
+    const existingUser = await this.findOne({ email });
+    if (existingUser) {
+      return new Error("User with this email already exists");
+    }
+    const user = new this({ name, email, password });
+    await user.save();
+    return user;
+  }
+
+  public static async createOrFindUsergoogle(
+    this: ReturnModelType<typeof UserClass>,
+    params: createUserGoogleParams,
+  ): Promise<UserClass> {
+    const { name, email, google_id } = params;
+    const existingUser = await this.findOne({ email });
+    if (existingUser) {
+      return existingUser;
+    }
+    const user = new this({ name, email, google_id });
+    await user.save();
+    return user;
   }
 }
 
 export const UserModel = getModelForClass(UserClass);
+
+export interface createUserPasswordParams {
+  email: string;
+  password: string;
+  name: string;
+}
+
+interface createUserGoogleParams {
+  email?: string;
+  name?: string;
+  google_id: string;
+}
