@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from "express";
 import session from "express-session";
 import { OAuth2Client } from "google-auth-library";
 import { UserModel } from "~/models/users";
-import { isProd } from "~/utils/constants";
 import env from "~/utils/env";
 import { httpInternalServerError, httpUnauthorizedError, sendHttpError } from "~/utils/httpError";
 import type { components } from "./api/schema";
@@ -10,14 +9,14 @@ import type { components } from "./api/schema";
 const store = new session.MemoryStore();
 export const sessionMiddleware = session({
   name: "sess",
-  secret: process.env.SESSION_SECRET || "dev-secret-change-me",
+  secret: env.SECRET_KEY,
   resave: false,
   saveUninitialized: false,
   store,
   cookie: {
     httpOnly: true,
     domain: env.URL.hostname,
-    secure: isProd,
+    secure: env.IS_PROD,
     sameSite: "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     path: "/",
