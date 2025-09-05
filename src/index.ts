@@ -13,7 +13,7 @@ async function main() {
 
   const server = http.createServer(app);
 
-  server.listen(process.env.PORT || 3000);
+  server.listen(env.URL.port);
   server.on("listening", () => onListening(server));
   server.on("error", (err) => {
     logger.error(err);

@@ -5,6 +5,7 @@ import { logger } from "~/lib/logger";
 import { type createUserPasswordParams, UserModel } from "~/models/users";
 import { httpBadRequestError, httpInternalServerError } from "~/utils/httpError";
 import type { retService } from "./helper";
+import env from "~/utils/env";
 
 type serviceSigninPasswordParams = {
   email: string;
@@ -26,7 +27,7 @@ export async function serviceSigninPassword(
   }
 
   const user: components["schemas"]["data-user"] = {
-    id: data.id,
+    id: data._id.toString(),
     name: data.name,
     email: data.email,
     cv_url: data.cv_url,
@@ -61,7 +62,7 @@ export async function serviceFindOrCreateGoogleUser(
 
   const ticket = await oauth2Client.verifyIdToken({
     idToken: tokens.id_token || "",
-    audience: process.env.GOOGLE_CLIENT_ID,
+    audience: env.GOOGLE_CLIENT_ID,
   });
 
   const userInfo = ticket.getPayload();
