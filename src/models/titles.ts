@@ -2,6 +2,8 @@ import { getModelForClass, modelOptions, prop, type ReturnModelType } from "@typ
 
 @modelOptions({ schemaOptions: { collection: "titles" } })
 class TitleClass {
+  public id!: string;
+
   @prop({ required: true, type: String })
   public desc!: string;
 
@@ -18,16 +20,14 @@ class TitleClass {
   public title!: string;
 
   public static async findById(this: ReturnModelType<typeof TitleClass>, id: string) {
-    return this.findOne({ _id: id }).lean().exec();
+    return this.findOne({ _id: id });
   }
 
   public static async getAllData(this: ReturnModelType<typeof TitleClass>) {
     return this.find(
       {},
       { id: 1, desc: 1, description: 1, photo_url: 1, proposal_url: 1, title: 1 },
-    )
-      .lean()
-      .exec();
+    );
   }
 }
 

@@ -13,11 +13,11 @@ class UserClass {
   @prop({ required: true, type: String })
   public name!: string;
 
+  @prop({ required: true, unique: true, type: String })
+  public email!: string;
+
   @prop({ type: String })
   public google_id?: string;
-
-  @prop({ type: String, unique: true })
-  public email?: string;
 
   @prop({ type: String })
   public password?: string;
@@ -28,19 +28,19 @@ class UserClass {
   @prop({ type: String })
   public cv_url?: string;
 
-  @prop({ type: Boolean, default: false })
+  @prop({ required: true, type: Boolean, default: false })
   public is_admin!: boolean;
 
   public static async findById(this: ReturnModelType<typeof UserClass>, id: string) {
-    return this.findOne({ _id: id }).lean().exec();
+    return this.findOne({ _id: id });
   }
 
   public static async findByEmail(this: ReturnModelType<typeof UserClass>, email: string) {
-    return this.findOne({ email }).lean().exec();
+    return this.findOne({ email });
   }
 
   public static async getAllData(this: ReturnModelType<typeof UserClass>) {
-    return this.find({}, { _id: 1, name: 1 }).lean().exec();
+    return this.find({}, { _id: 1, name: 1 });
   }
 
   public static async createUserPassword(

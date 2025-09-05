@@ -8,6 +8,8 @@ import {
 
 @modelOptions({ schemaOptions: { collection: "submissions" } })
 class SubmissionsClass {
+  public id!: string;
+
   @prop({ required: true, type: mongoose.Types.ObjectId })
   public team_id!: mongoose.Types.ObjectId;
 
@@ -21,11 +23,11 @@ class SubmissionsClass {
   public accepted!: boolean;
 
   public static async findById(this: ReturnModelType<typeof SubmissionsClass>, id: string) {
-    return this.findOne({ _id: id }).lean().exec();
+    return this.findOne({ _id: id });
   }
 
   public static async getAllData(this: ReturnModelType<typeof SubmissionsClass>) {
-    return this.find({}, { id: 1, team_id: 1, team_target_id: 1 }).lean().exec();
+    return this.find({}, { id: 1, team_id: 1, team_target_id: 1 });
   }
 }
 

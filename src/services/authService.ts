@@ -3,9 +3,9 @@ import type { components } from "~/lib/api/schema";
 import { oauth2Client } from "~/lib/auth";
 import { logger } from "~/lib/logger";
 import { type createUserPasswordParams, UserModel } from "~/models/users";
-import { httpBadRequestError, httpInternalServerError } from "~/utils/httpError";
-import type { retService } from "./helper";
+import type { retService } from "~/types/service";
 import env from "~/utils/env";
+import { httpBadRequestError, httpInternalServerError } from "~/utils/httpError";
 
 type serviceSigninPasswordParams = {
   email: string;
@@ -27,7 +27,7 @@ export async function serviceSigninPassword(
   }
 
   const user: components["schemas"]["data-user"] = {
-    id: data._id.toString(),
+    id: data.id,
     name: data.name,
     email: data.email,
     cv_url: data.cv_url,

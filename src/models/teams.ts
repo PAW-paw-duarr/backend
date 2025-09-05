@@ -5,10 +5,12 @@ import {
   prop,
   type ReturnModelType,
 } from "@typegoose/typegoose";
-import { CategoryCapstone } from "../utils/constants";
+import { CategoryCapstone } from "~/utils/constants";
 
 @modelOptions({ schemaOptions: { collection: "teams" } })
 class TeamsClass {
+  public id!: string;
+
   @prop({ required: true, type: String })
   public name!: string;
 
@@ -21,15 +23,15 @@ class TeamsClass {
   @prop({ type: mongoose.Types.ObjectId })
   public title_id?: mongoose.Types.ObjectId;
 
-  @prop({ type: Number })
-  public period?: number;
+  @prop({ required: true, type: Number })
+  public period!: number;
 
   public static async findById(this: ReturnModelType<typeof TeamsClass>, id: string) {
-    return this.findOne({ _id: id }).lean().exec();
+    return this.findOne({ _id: id });
   }
 
   public static async getAllData(this: ReturnModelType<typeof TeamsClass>) {
-    return this.find({}, { id: 1, name: 1, category: 1 }).lean().exec();
+    return this.find({}, { id: 1, name: 1, category: 1 });
   }
 }
 
