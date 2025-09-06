@@ -3,10 +3,6 @@ import { logger } from "~/lib/logger.js";
 
 const envSchema = z.object({
   IS_PROD: z.boolean(),
-  LOG_LEVEL: z
-    .enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"])
-    .optional()
-    .default("info"),
 
   MONGO_URL: z.url("Invalid MongoDB URL format"),
 
@@ -25,7 +21,6 @@ const envSchema = z.object({
 
 const env: z.infer<typeof envSchema> = envSchema.parse({
   IS_PROD: process.env.NODE_ENV === "production",
-  LOG_LEVEL: process.env.LOG_LEVEL,
 
   MONGO_URL: process.env.MONGO_URL,
   DOMAIN: process.env.DOMAIN,
