@@ -1,6 +1,6 @@
-import type { components } from "~/lib/api/schema";
-import { TitleModel } from "~/models/titles";
-import type { retService } from "~/types/service";
+import type { components } from "~/lib/api/schema.js";
+import { TitleModel } from "~/models/titles.js";
+import type { retService } from "~/types/service.js";
 
 export async function serviceGetAllTitles(): retService<
   components["schemas"]["data-title-short"][]

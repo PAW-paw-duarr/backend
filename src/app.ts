@@ -1,10 +1,10 @@
 import express from "express";
-import { httpLogger } from "~/lib/logger";
-import { authMiddleware, sessionMiddleware } from "./lib/auth";
-import authRouter from "./routes/auth";
-import indexRouter from "./routes/index";
-import titleRouter from "./routes/title";
-import { httpInternalServerError, httpNotFoundError, sendHttpError } from "./utils/httpError";
+import { httpLogger } from "~/lib/logger.js";
+import { authMiddleware, sessionMiddleware } from "~/lib/auth.js";
+import authRouter from "~/routes/auth.js";
+import indexRouter from "~/routes/index.js";
+import titleRouter from "~/routes/title.js";
+import { httpInternalServerError, httpNotFoundError, sendHttpError } from "~/utils/httpError.js";
 
 const app = express();
 

@@ -5,7 +5,7 @@ import {
   type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
-import { TeamsClass } from "./teams";
+import { TeamsClass } from "./teams.js";
 
 @modelOptions({ schemaOptions: { collection: "users" } })
 export class UserClass {

@@ -5,8 +5,8 @@ import {
   type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
-import { CategoryCapstone } from "~/utils/constants";
-import { TitleClass } from "./titles";
+import { CategoryCapstone } from "~/utils/constants.js";
+import { TitleClass } from "./titles.js";
 
 @modelOptions({ schemaOptions: { collection: "teams" } })
 export class TeamsClass {

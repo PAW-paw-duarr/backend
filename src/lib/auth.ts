@@ -1,10 +1,14 @@
 import type { NextFunction, Request, Response } from "express";
 import session from "express-session";
 import { OAuth2Client } from "google-auth-library";
-import { UserModel } from "~/models/users";
-import env from "~/utils/env";
-import { httpInternalServerError, httpUnauthorizedError, sendHttpError } from "~/utils/httpError";
-import type { components } from "./api/schema";
+import { UserModel } from "~/models/users.js";
+import env from "~/utils/env.js";
+import {
+  httpInternalServerError,
+  httpUnauthorizedError,
+  sendHttpError,
+} from "~/utils/httpError.js";
+import type { components } from "./api/schema.js";
 
 const store = new session.MemoryStore();
 export const sessionMiddleware = session({

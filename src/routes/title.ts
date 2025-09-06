@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { serviceGetAllTitles } from "~/services/titleService";
-import { sendHttpError } from "~/utils/httpError";
+import { serviceGetAllTitles } from "~/services/titleService.js";
+import { sendHttpError } from "~/utils/httpError.js";
 
 const router = Router();
 
