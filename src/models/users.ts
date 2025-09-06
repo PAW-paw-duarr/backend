@@ -1,13 +1,14 @@
 import {
   getModelForClass,
   modelOptions,
-  type mongoose,
   prop,
+  type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
+import { TeamsClass } from "./teams";
 
 @modelOptions({ schemaOptions: { collection: "users" } })
-class UserClass {
+export class UserClass {
   public id!: string;
 
   @prop({ required: true, type: String })
@@ -22,8 +23,8 @@ class UserClass {
   @prop({ type: String })
   public password?: string;
 
-  @prop({ type: String })
-  public team_id?: mongoose.Types.ObjectId;
+  @prop({ ref: () => TeamsClass })
+  public team_id?: Ref<TeamsClass>;
 
   @prop({ type: String })
   public cv_url?: string;

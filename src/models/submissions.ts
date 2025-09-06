@@ -1,20 +1,21 @@
 import {
   getModelForClass,
   modelOptions,
-  mongoose,
   prop,
+  type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
+import { TeamsClass } from "./teams";
 
 @modelOptions({ schemaOptions: { collection: "submissions" } })
-class SubmissionsClass {
+export class SubmissionsClass {
   public id!: string;
 
-  @prop({ required: true, type: mongoose.Types.ObjectId })
-  public team_id!: mongoose.Types.ObjectId;
+  @prop({ required: true, ref: () => TeamsClass })
+  public team!: Ref<TeamsClass>;
 
-  @prop({ required: true, type: mongoose.Types.ObjectId })
-  public team_target_id!: mongoose.Types.ObjectId;
+  @prop({ required: true, ref: () => TeamsClass })
+  public team_target!: Ref<TeamsClass>;
 
   @prop({ required: true, type: String })
   public grand_design_url!: string;
@@ -31,4 +32,4 @@ class SubmissionsClass {
   }
 }
 
-export const TeamModel = getModelForClass(SubmissionsClass);
+export const SubmissionModel = getModelForClass(SubmissionsClass);

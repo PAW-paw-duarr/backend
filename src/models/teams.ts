@@ -1,14 +1,15 @@
 import {
   getModelForClass,
   modelOptions,
-  mongoose,
   prop,
+  type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
 import { CategoryCapstone } from "~/utils/constants";
+import { TitleClass } from "./titles";
 
 @modelOptions({ schemaOptions: { collection: "teams" } })
-class TeamsClass {
+export class TeamsClass {
   public id!: string;
 
   @prop({ required: true, type: String })
@@ -20,8 +21,8 @@ class TeamsClass {
   @prop({ required: true, enum: CategoryCapstone, type: String })
   public category!: CategoryCapstone;
 
-  @prop({ type: mongoose.Types.ObjectId })
-  public title_id?: mongoose.Types.ObjectId;
+  @prop({ ref: () => TitleClass })
+  public title?: Ref<TitleClass>;
 
   @prop({ required: true, type: Number })
   public period!: number;

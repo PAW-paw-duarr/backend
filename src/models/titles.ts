@@ -1,7 +1,7 @@
 import { getModelForClass, modelOptions, prop, type ReturnModelType } from "@typegoose/typegoose";
 
 @modelOptions({ schemaOptions: { collection: "titles" } })
-class TitleClass {
+export class TitleClass {
   public id!: string;
 
   @prop({ required: true, type: String })
