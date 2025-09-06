@@ -1,9 +1,8 @@
 import pino from "pino";
 import httpPino from "pino-http";
-import env from "~/utils/env.js";
 
 export const logger = pino({
-  level: env.LOG_LEVEL,
+  level: process.env.LOG_LEVEL || "info",
   formatters: {
     level: (label) => {
       return { level: label.toUpperCase() };
@@ -22,7 +21,7 @@ export const httpLogger = httpPino.default({
     "req.body.password",
     'res.headers["set-cookie"]',
   ],
-  level: env.LOG_LEVEL,
+  level: process.env.LOG_LEVEL || "info",
   serializers: {
     req: (req) => ({
       method: req.method,
