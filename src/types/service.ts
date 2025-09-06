@@ -1,4 +1,4 @@
-import type { components } from "~/lib/api/schema";
+import type { components } from "~/lib/api/schema.js";
 
 type returnData<T> =
   | { success: number; data: T; error?: components["schemas"]["DefaultErrors"] }

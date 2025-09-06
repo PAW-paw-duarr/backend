@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { logger } from "~/lib/logger";
+import { logger } from "~/lib/logger.js";
 
 const envSchema = z.object({
   IS_PROD: z.boolean(),
@@ -52,7 +52,12 @@ export function validateEnv(): boolean {
 }
 
 function parseUrl(urlString: string) {
-  const url = new URL(urlString);
+  let url: URL;
+  try {
+    url = new URL(urlString);
+  } catch {
+    throw new Error("DOMAIN must be a valid URL");
+  }
 
   let port = url.port;
   if (!port) {

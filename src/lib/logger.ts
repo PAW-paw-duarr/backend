@@ -1,6 +1,6 @@
 import pino from "pino";
 import httpPino from "pino-http";
-import env from "~/utils/env";
+import env from "~/utils/env.js";
 
 export const logger = pino({
   level: env.LOG_LEVEL,
@@ -15,7 +15,7 @@ export const logger = pino({
   timestamp: pino.stdTimeFunctions.isoTime,
 });
 
-export const httpLogger = httpPino({
+export const httpLogger = httpPino.default({
   redact: [
     "req.headers.authorization",
     "req.headers.cookie",

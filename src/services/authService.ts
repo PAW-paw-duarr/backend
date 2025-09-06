@@ -1,11 +1,11 @@
 import argon2 from "argon2";
-import type { components } from "~/lib/api/schema";
-import { oauth2Client } from "~/lib/auth";
-import { logger } from "~/lib/logger";
-import { type createUserPasswordParams, UserModel } from "~/models/users";
-import type { retService } from "~/types/service";
-import env from "~/utils/env";
-import { httpBadRequestError, httpInternalServerError } from "~/utils/httpError";
+import type { components } from "~/lib/api/schema.js";
+import { oauth2Client } from "~/lib/auth.js";
+import { logger } from "~/lib/logger.js";
+import { type createUserPasswordParams, UserModel } from "~/models/users.js";
+import type { retService } from "~/types/service.js";
+import env from "~/utils/env.js";
+import { httpBadRequestError, httpInternalServerError } from "~/utils/httpError.js";
 
 type serviceSigninPasswordParams = {
   email: string;

@@ -1,12 +1,12 @@
 import express from "express";
 import { z } from "zod";
-import { createUserSession, destroyUserSession, oauth2Client } from "~/lib/auth";
+import { createUserSession, destroyUserSession, oauth2Client } from "~/lib/auth.js";
 import {
   serviceFindOrCreateGoogleUser,
   serviceSigninPassword,
   serviceSignupPassword,
-} from "~/services/authService";
-import { httpBadRequestError, sendHttpError } from "~/utils/httpError";
+} from "~/services/authService.js";
+import { httpBadRequestError, sendHttpError } from "~/utils/httpError.js";
 
 const router = express.Router();
 

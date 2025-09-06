@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import type { components } from "~/lib/api/schema";
+import type { components } from "~/lib/api/schema.js";
 
 export const httpBadRequestError: components["schemas"]["DefaultErrors"] = {
   status: 400,

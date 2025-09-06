@@ -1,8 +1,8 @@
 import http from "node:http";
 import mongoose from "mongoose";
-import app from "./app";
-import { logger } from "./lib/logger";
-import env, { validateEnv } from "./utils/env";
+import app from "~/app.js";
+import { logger } from "~/lib/logger.js";
+import env, { validateEnv } from "~/utils/env.js";
 
 async function main() {
   if (!validateEnv()) {
