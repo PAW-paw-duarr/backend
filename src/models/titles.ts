@@ -19,10 +19,6 @@ export class TitleClass {
   @prop({ required: true, type: String })
   public title!: string;
 
-  public static async findById(this: ReturnModelType<typeof TitleClass>, id: string) {
-    return this.findOne({ _id: id });
-  }
-
   public static async getAllData(this: ReturnModelType<typeof TitleClass>) {
     return this.find(
       {},
