@@ -52,26 +52,6 @@ export interface paths {
     patch: operations["patch-api-title"];
     trace?: never;
   };
-  "/title/{id}/take": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Take Title
-     * @description take the title
-     */
-    post: operations["post-api-title-id-take"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/submission": {
     parameters: {
       query?: never;
@@ -106,6 +86,26 @@ export interface paths {
     get: operations["get-api-submission-id"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/submission/submit": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Submit Submission
+     * @description take the title
+     */
+    post: operations["post-api-submission-submit"];
     delete?: never;
     options?: never;
     head?: never;
@@ -163,29 +163,9 @@ export interface paths {
      * Detail Team By Id
      * @description get current team detail
      */
-    get: operations["get-api-team"];
+    get: operations["get-api-team-id"];
     put?: never;
     post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/team/kick": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Kick Member
-     * @description kick member
-     */
-    post: operations["post-api-team-kick"];
     delete?: never;
     options?: never;
     head?: never;
@@ -207,6 +187,26 @@ export interface paths {
      */
     post: operations["post-api-team-join"];
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/team/kick": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Kick Member
+     * @description kick member
+     */
+    delete: operations["post-api-team-kick"];
     options?: never;
     head?: never;
     patch?: never;
@@ -491,42 +491,7 @@ export interface paths {
     get?: never;
     put?: never;
     /** Password SignUp */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          /** @example {
-           *       "name": "tes1",
-           *       "email": "tes@mail.com",
-           *       "password": "Admin123!"
-           *     } */
-          "application/json": Record<string, never>;
-        };
-      };
-      responses: {
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["data-user"];
-          };
-        };
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["DefaultErrors"];
-          };
-        };
-      };
-    };
+    post: operations["post-auth-signup-password"];
     delete?: never;
     options?: never;
     head?: never;
@@ -541,25 +506,7 @@ export interface paths {
       cookie?: never;
     };
     /** Logout */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": Record<string, never>;
-          };
-        };
-      };
-    };
+    get: operations["get-auth-signout"];
     put?: never;
     post?: never;
     delete?: never;
@@ -601,6 +548,7 @@ export interface components {
         | "Smart City"
         | "Transportasi Ramah Lingkungan";
       period?: number;
+      code?: string;
     };
     "data-team-short": {
       id?: string;
@@ -630,11 +578,14 @@ export interface components {
       team_id?: string;
       grand_design_url?: string;
       team_target_id?: string;
+      accepted?: boolean;
+      title_id?: string;
     };
     "data-submission-short": {
       id?: string;
       team_id?: string;
       team_target_id?: string;
+      title_id?: string;
     };
     "data-title": {
       id?: string;
@@ -720,18 +671,18 @@ export interface operations {
            * Format: binary
            * @example
            */
-          photo_file?: string;
+          photo_file: string;
           /**
            * Format: binary
            * @example
            */
-          proposal_file?: string;
+          proposal_file: string;
           /** @example  */
-          title?: string;
+          title: string;
           /** @example  */
-          desc?: string;
+          desc: string;
           /** @example  */
-          description?: string;
+          description: string;
         };
       };
     };
@@ -881,76 +832,6 @@ export interface operations {
       };
     };
   };
-  "post-api-title-id-take": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: {
-      content: {
-        "multipart/form-data": {
-          /**
-           * Format: binary
-           * @example
-           */
-          grand_design: string;
-        };
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          /** @example {
-           *       "id": "123",
-           *       "grand_design_url": "https://average-skeleton.net/"
-           *     } */
-          "application/json": {
-            id: string;
-            grand_design_url: string;
-          };
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-    };
-  };
   "get-api-submission": {
     parameters: {
       query?: never;
@@ -1026,6 +907,76 @@ export interface operations {
       };
     };
   };
+  "post-api-submission-submit": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        "multipart/form-data": {
+          /** @example  */
+          title_id: string;
+          /**
+           * Format: binary
+           * @example
+           */
+          grand_design: string;
+        };
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /** @example {
+           *       "id": "123",
+           *       "grand_design_url": "https://average-skeleton.net/"
+           *     } */
+          "application/json": {
+            id: string;
+            grand_design_url: string;
+          };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+    };
+  };
   "post-api-submission-response": {
     parameters: {
       query?: never;
@@ -1041,7 +992,7 @@ export interface operations {
          *     } */
         "application/json": {
           id: string;
-          accept: boolean;
+          accept: string;
         };
       };
     };
@@ -1137,7 +1088,7 @@ export interface operations {
       };
     };
   };
-  "get-api-team": {
+  "get-api-team-id": {
     parameters: {
       query?: never;
       header?: never;
@@ -1189,7 +1140,7 @@ export interface operations {
       };
     };
   };
-  "post-api-team-kick": {
+  "post-api-team-join": {
     parameters: {
       query?: never;
       header?: never;
@@ -1202,7 +1153,7 @@ export interface operations {
          *       "id": "123"
          *     } */
         "application/json": {
-          id: string;
+          code: string;
         };
       };
     };
@@ -1215,9 +1166,7 @@ export interface operations {
           /** @example {
            *       "id": "123"
            *     } */
-          "application/json": {
-            id: string;
-          };
+          "application/json": components["schemas"]["data-team"];
         };
       };
       400: {
@@ -1254,7 +1203,7 @@ export interface operations {
       };
     };
   };
-  "post-api-team-join": {
+  "post-api-team-kick": {
     parameters: {
       query?: never;
       header?: never;
@@ -1267,22 +1216,17 @@ export interface operations {
          *       "id": "123"
          *     } */
         "application/json": {
-          id: string;
+          user_id: string;
         };
       };
     };
     responses: {
-      200: {
+      204: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          /** @example {
-           *       "id": "123"
-           *     } */
-          "application/json": {
-            id: string;
-          };
+          "application/json": Record<string, never>;
         };
       };
       400: {
@@ -2016,6 +1960,61 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+    };
+  };
+  "post-auth-signup-password": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        /** @example {
+         *       "name": "tes1",
+         *       "email": "tes@mail.com",
+         *       "password": "Admin123!"
+         *     } */
+        "application/json": Record<string, never>;
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["data-user"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+    };
+  };
+  "get-auth-signout": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": Record<string, never>;
         };
       };
     };

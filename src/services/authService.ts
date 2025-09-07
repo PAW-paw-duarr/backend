@@ -5,7 +5,7 @@ import { logger } from "~/lib/logger.js";
 import { type createUserPasswordParams, UserModel } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
 import env from "~/utils/env.js";
-import { httpBadRequestError, httpInternalServerError } from "~/utils/httpError.js";
+import { httpBadRequestError, httpInternalServerError } from "~/utils/httpHelper.js";
 
 type serviceSigninPasswordParams = {
   email: string;
@@ -14,12 +14,13 @@ type serviceSigninPasswordParams = {
 export async function serviceSigninPassword(
   params: serviceSigninPasswordParams,
 ): retService<components["schemas"]["data-user"]> {
-  const data = await UserModel.findByEmail(params.email);
+  const data = await UserModel.findOne({ email: params.email });
   if (!data || data.password === undefined) {
     logger.info(`User/ password not found: ${params.email}`);
     return { error: httpBadRequestError, data: "Invalid email or password" };
   }
 
+  // verify password
   const isValid = data.password ? await argon2.verify(data.password, params.password) : false;
   if (!isValid) {
     logger.info(`Invalid password for: ${params.email}`);
@@ -31,7 +32,7 @@ export async function serviceSigninPassword(
     name: data.name,
     email: data.email,
     cv_url: data.cv_url,
-    team_id: data.team_id ? data.team_id.toString() : undefined,
+    team_id: data.team?.id,
     google_id: data.google_id,
   };
   return { success: 200, data: user };
@@ -82,7 +83,7 @@ export async function serviceFindOrCreateGoogleUser(
     name: data.name,
     email: data.email,
     cv_url: data.cv_url,
-    team_id: data.team_id ? data.team_id.toString() : undefined,
+    team_id: data.team?.id,
     google_id: data.google_id,
   };
 

@@ -24,7 +24,7 @@ export class UserClass {
   public password?: string;
 
   @prop({ ref: () => TeamsClass })
-  public team_id?: Ref<TeamsClass>;
+  public team?: Ref<TeamsClass>;
 
   @prop({ type: String })
   public cv_url?: string;
@@ -32,16 +32,8 @@ export class UserClass {
   @prop({ required: true, type: Boolean, default: false })
   public is_admin!: boolean;
 
-  public static async findById(this: ReturnModelType<typeof UserClass>, id: string) {
-    return this.findOne({ _id: id });
-  }
-
-  public static async findByEmail(this: ReturnModelType<typeof UserClass>, email: string) {
-    return this.findOne({ email });
-  }
-
   public static async getAllData(this: ReturnModelType<typeof UserClass>) {
-    return this.find({}, { _id: 1, name: 1 });
+    return this.find({}, { id: 1, name: 1 });
   }
 
   public static async createUserPassword(
@@ -74,7 +66,6 @@ export class UserClass {
 }
 
 export const UserModel = getModelForClass(UserClass);
-export type UserDocument = UserClass;
 
 export interface createUserPasswordParams {
   email: string;

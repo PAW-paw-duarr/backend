@@ -27,9 +27,8 @@ export class TeamsClass {
   @prop({ required: true, type: Number })
   public period!: number;
 
-  public static async findById(this: ReturnModelType<typeof TeamsClass>, id: string) {
-    return this.findOne({ _id: id });
-  }
+  @prop({ required: true, type: String })
+  public code!: string;
 
   public static async getAllData(this: ReturnModelType<typeof TeamsClass>) {
     return this.find({}, { id: 1, name: 1, category: 1 });
