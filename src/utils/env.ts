@@ -17,6 +17,12 @@ const envSchema = z.object({
   SECRET_KEY: z.string().min(32, "SECRET_KEY must be at least 32 characters long"),
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
+
+  S3_API_KEY: z.string(),
+  S3_API_SECRET: z.string(),
+  S3_BUCKET_NAME: z.string(),
+  S3_REGION: z.string(),
+  S3_ENDPOINT: z.url(),
 });
 
 const env: z.infer<typeof envSchema> = envSchema.parse({
@@ -29,6 +35,12 @@ const env: z.infer<typeof envSchema> = envSchema.parse({
   SECRET_KEY: process.env.SECRET_KEY,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+
+  S3_API_KEY: process.env.S3_API_KEY,
+  S3_API_SECRET: process.env.S3_API_SECRET,
+  S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
+  S3_REGION: process.env.S3_REGION,
+  S3_ENDPOINT: process.env.S3_ENDPOINT,
 });
 
 export function validateEnv(): boolean {
