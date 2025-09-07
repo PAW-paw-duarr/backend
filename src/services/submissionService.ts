@@ -8,7 +8,7 @@ import {
   httpBadRequestError,
   httpNotFoundError,
   httpUnauthorizedError,
-} from "~/utils/httpHelper.js";
+} from "~/utils/httpError.js";
 
 export async function serviceGetAllSubmission(
   currentUser: UserClass,

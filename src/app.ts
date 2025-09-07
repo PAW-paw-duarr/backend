@@ -7,7 +7,7 @@ import submissionRouter from "~/routes/submission.js";
 import teamRouter from "~/routes/team.js";
 import titleRouter from "~/routes/title.js";
 import userRouter from "~/routes/user.js";
-import { httpInternalServerError, httpNotFoundError, sendHttpError } from "~/utils/httpHelper.js";
+import { httpInternalServerError, httpNotFoundError, sendHttpError } from "~/utils/httpError.js";
 
 const app = express();
 

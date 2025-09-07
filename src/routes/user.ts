@@ -5,7 +5,7 @@ import { safeUnlink } from "~/lib/file.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import { serviceGetUserById, serviceUpdateUser } from "~/services/userService.js";
-import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpHelper.js";
+import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpError.js";
 
 const router = express.Router();
 

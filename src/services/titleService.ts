@@ -4,7 +4,7 @@ import { TeamModel } from "~/models/teams.js";
 import { type TitleClass, TitleModel } from "~/models/titles.js";
 import type { UserClass } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
-import { httpBadRequestError, httpUnauthorizedError } from "~/utils/httpHelper.js";
+import { httpBadRequestError, httpUnauthorizedError } from "~/utils/httpError.js";
 
 export async function serviceGetAllTitles(): retService<
   components["schemas"]["data-title-short"][]

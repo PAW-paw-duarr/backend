@@ -5,7 +5,7 @@ import { logger } from "~/lib/logger.js";
 import { type createUserPasswordParams, UserModel } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
 import env from "~/utils/env.js";
-import { httpBadRequestError, httpInternalServerError } from "~/utils/httpHelper.js";
+import { httpBadRequestError, httpInternalServerError } from "~/utils/httpError.js";
 
 type serviceSigninPasswordParams = {
   email: string;

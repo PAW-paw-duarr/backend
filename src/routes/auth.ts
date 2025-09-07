@@ -6,7 +6,7 @@ import {
   serviceSigninPassword,
   serviceSignupPassword,
 } from "~/services/authService.js";
-import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpHelper.js";
+import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpError.js";
 
 const router = express.Router();
 

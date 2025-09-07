@@ -7,7 +7,7 @@ import {
   httpInternalServerError,
   httpUnauthorizedError,
   sendHttpError,
-} from "~/utils/httpHelper.js";
+} from "~/utils/httpError.js";
 import type { components } from "./api/schema.js";
 
 const store = new session.MemoryStore();

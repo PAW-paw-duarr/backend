@@ -5,7 +5,7 @@ import {
   serviceGetSubmissionById,
   serviceResponseSubmission,
 } from "~/services/submissionService.js";
-import { httpInternalServerError, sendHttpError } from "~/utils/httpHelper.js";
+import { httpInternalServerError, sendHttpError } from "~/utils/httpError.js";
 
 const router = express.Router();
 

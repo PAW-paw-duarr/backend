@@ -1,7 +1,7 @@
 import type { components } from "~/lib/api/schema.js";
 import { type UserClass, UserModel } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
-import { httpNotFoundError } from "~/utils/httpHelper.js";
+import { httpNotFoundError } from "~/utils/httpError.js";
 
 export async function serviceGetUserById(
   id: string,

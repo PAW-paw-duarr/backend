@@ -10,7 +10,7 @@ import {
   serviceGetTitleById,
   serviceUpdateTitle,
 } from "~/services/titleService.js";
-import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpHelper.js";
+import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpError.js";
 
 const router = Router();
 

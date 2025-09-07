@@ -2,7 +2,7 @@ import type { components } from "~/lib/api/schema.js";
 import { TeamModel } from "~/models/teams.js";
 import { type UserClass, UserModel } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
-import { httpNotFoundError, httpUnauthorizedError } from "~/utils/httpHelper.js";
+import { httpNotFoundError, httpUnauthorizedError } from "~/utils/httpError.js";
 
 export async function serviceGetTeamById(
   id: string,
