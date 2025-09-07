@@ -32,7 +32,7 @@ export async function serviceSigninPassword(
     name: data.name,
     email: data.email,
     cv_url: data.cv_url,
-    team_id: data.team?.id,
+    team_id: data.team?._id.toString(),
     google_id: data.google_id,
   };
   return { success: 200, data: user };
@@ -83,7 +83,7 @@ export async function serviceFindOrCreateGoogleUser(
     name: data.name,
     email: data.email,
     cv_url: data.cv_url,
-    team_id: data.team?.id,
+    team_id: data.team?._id.toString(),
     google_id: data.google_id,
   };
 

@@ -5,32 +5,42 @@ import {
   serviceJoinTeam,
   serviceKickMemberTeam,
 } from "~/services/teamService.js";
-import { httpBadRequestError, sendHttpError } from "~/utils/httpHelper.js";
+import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpHelper.js";
 
 const router = express.Router();
 
 router.get("/", async (_, res) => {
   const user = res.locals.user;
 
-  const service = await serviceGetTeamById(user.team?.id);
-  if (service.success === undefined) {
-    sendHttpError({ res, error: service.error, message: service.data });
+  try {
+    const service = await serviceGetTeamById(user.team?._id.toString() || "");
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success).json(service.data);
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
-
-  res.status(service.success).json(service.data);
 });
 
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
 
-  const service = await serviceGetTeamById(id);
-  if (service.success === undefined) {
-    sendHttpError({ res, error: service.error, message: service.data });
+  try {
+    const service = await serviceGetTeamById(id);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success).json(service.data);
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
-
-  res;
 });
 
 const postJoinSchema = z.object({
@@ -46,13 +56,19 @@ router.post("/join", async (req, res) => {
 
   const user = res.locals.user;
 
-  const service = await serviceJoinTeam(code, user);
-  if (service.success === undefined) {
-    sendHttpError({ res, error: service.error, message: service.data });
+  try {
+    const service = await serviceJoinTeam(code, user);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success).json(service.data);
+    return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
-
-  res.status(service.success).json(service.data);
 });
 
 const deleteKickSchema = z.object({
@@ -68,13 +84,19 @@ router.delete("/kick", async (req, res) => {
 
   const user = res.locals.user;
 
-  const service = await serviceKickMemberTeam(user_id, user);
-  if (service.success === undefined) {
-    sendHttpError({ res, error: service.error, message: service.data });
+  try {
+    const service = await serviceKickMemberTeam(user_id, user);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success);
+    return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
-
-  res.status(service.success);
 });
 
 export default router;

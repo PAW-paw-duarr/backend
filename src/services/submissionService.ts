@@ -18,9 +18,9 @@ export async function serviceGetAllSubmission(
   const submission: components["schemas"]["data-submission-short"][] = data.map(
     (item): components["schemas"]["data-submission-short"] => ({
       id: item.id,
-      team_id: item.team.id,
-      team_target_id: item.team_target.id,
-      title_id: item.title?.id,
+      team_id: item.team._id.toString(),
+      team_target_id: item.team_target._id.toString(),
+      title_id: item.title?._id.toString(),
     }),
   );
 
@@ -35,17 +35,17 @@ export async function serviceGetSubmissionById(
     return { error: httpBadRequestError, data: "Invalid submission ID" };
   }
 
-  const data = await SubmissionModel.findByIdLimited(id, currentUser.team?.id);
+  const data = await SubmissionModel.findByIdLimited(id, currentUser.team?._id.toString() || "");
   if (!data) {
     return { error: httpNotFoundError, data: "Submission not found" };
   }
 
   const submission: components["schemas"]["data-submission"] = {
     id: data.id,
-    team_id: data.team.id,
-    team_target_id: data.team_target.id,
+    team_id: data.team._id.toString(),
+    team_target_id: data.team_target._id.toString(),
     grand_design_url: data.grand_design_url,
-    title_id: data.title?.id,
+    title_id: data.title._id.toString(),
     accepted: data.accepted ?? false,
   };
 
@@ -62,7 +62,7 @@ export async function serviceResponseSubmission(
   }
 
   // check if current user is team leader
-  const currentTeam = await TeamModel.findOne({ id: currentUser.team?.id });
+  const currentTeam = await TeamModel.findOne({ id: currentUser.team?._id.toString() });
   if (currentUser.email !== currentTeam?.leader_email) {
     return { error: httpUnauthorizedError, data: "Only team leader can respond to submissions" };
   }
@@ -74,10 +74,10 @@ export async function serviceResponseSubmission(
 
   const submission: components["schemas"]["data-submission"] = {
     id: data.id,
-    team_id: data.team.id,
-    team_target_id: data.team_target.id,
+    team_id: data.team._id.toString(),
+    team_target_id: data.team_target._id.toString(),
     grand_design_url: data.grand_design_url,
-    title_id: data.title?.id,
+    title_id: data.title?._id.toString(),
     accepted: data.accepted,
   };
 
@@ -97,7 +97,7 @@ export async function serviceSubmitSubmission(
   }
 
   // check if current user is team leader
-  const currentTeam = await TeamModel.findOne({ id: currentUser.team?.id });
+  const currentTeam = await TeamModel.findOne({ id: currentUser.team?._id.toString() });
   if (currentUser.email !== currentTeam?.leader_email) {
     return { error: httpUnauthorizedError, data: "Only team leader can respond to submissions" };
   }
@@ -108,7 +108,7 @@ export async function serviceSubmitSubmission(
   }
 
   const submission = await SubmissionModel.create({
-    team: currentUser.team?.id,
+    team: currentUser.team?._id.toString(),
     team_target: titleOwnerTeam.id,
     title: payload.title_id,
     grand_design_url: payload.grand_design_url,
@@ -116,10 +116,10 @@ export async function serviceSubmitSubmission(
 
   const result: components["schemas"]["data-submission"] = {
     id: submission.id,
-    team_id: submission.team.id,
-    team_target_id: submission.team_target.id,
+    team_id: submission.team._id.toString(),
+    team_target_id: submission.team_target._id.toString(),
     grand_design_url: submission.grand_design_url,
-    title_id: submission.title?.id,
+    title_id: submission.title?._id.toString(),
     accepted: submission.accepted,
   };
 

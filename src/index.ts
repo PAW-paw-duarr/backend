@@ -1,8 +1,10 @@
+import fsPromises from "node:fs/promises";
 import http from "node:http";
 import mongoose from "mongoose";
 import app from "~/app.js";
 import { logger } from "~/lib/logger.js";
 import env, { validateEnv } from "~/utils/env.js";
+import { TMP_DIR } from "./utils/constants.js";
 
 async function main() {
   if (!validateEnv()) {
@@ -10,6 +12,8 @@ async function main() {
   }
 
   await connectMongo();
+
+  await fsPromises.mkdir(TMP_DIR, { recursive: true });
 
   const server = http.createServer(app);
 

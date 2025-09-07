@@ -6,7 +6,7 @@ import {
   serviceSigninPassword,
   serviceSignupPassword,
 } from "~/services/authService.js";
-import { httpBadRequestError, sendHttpError } from "~/utils/httpHelper.js";
+import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpHelper.js";
 
 const router = express.Router();
 
@@ -53,14 +53,19 @@ router.post("/signup/password", async (req, res) => {
     return;
   }
 
-  const resp = await serviceSignupPassword({ email, password, name });
+  try {
+    const resp = await serviceSignupPassword({ email, password, name });
 
-  if (resp.success === undefined) {
-    sendHttpError({ res, error: resp.error, message: resp.data });
+    if (resp.success === undefined) {
+      sendHttpError({ res, error: resp.error, message: resp.data });
+      return;
+    }
+    res.status(201).json(resp.data);
+    return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
-  res.status(201).json(resp.data);
-  return;
 });
 
 router.get("/signout", (req, res) => {
@@ -82,15 +87,20 @@ router.get("/google/callback", async (req, res) => {
     return;
   }
 
-  const resp = await serviceFindOrCreateGoogleUser(code);
+  try {
+    const resp = await serviceFindOrCreateGoogleUser(code);
 
-  if (resp.success === undefined) {
-    sendHttpError({ res, error: resp.error, message: resp.data });
+    if (resp.success === undefined) {
+      sendHttpError({ res, error: resp.error, message: resp.data });
+      return;
+    }
+
+    createUserSession({ req, res, user: resp.data, redirectTo: "/" });
+    return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
-
-  createUserSession({ req, res, user: resp.data, redirectTo: "/" });
-  return;
 });
 
 export default router;

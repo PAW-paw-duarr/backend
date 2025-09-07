@@ -5,33 +5,44 @@ import {
   serviceGetSubmissionById,
   serviceResponseSubmission,
 } from "~/services/submissionService.js";
-import { sendHttpError } from "~/utils/httpHelper.js";
+import { httpInternalServerError, sendHttpError } from "~/utils/httpHelper.js";
 
 const router = express.Router();
 
 router.get("/", async (_, res) => {
   const user = res.locals.user;
 
-  const submissions = await serviceGetAllSubmission(user);
-  if (submissions.error) {
-    res.status(submissions.error.status).json({ error: submissions.data });
+  try {
+    const submissions = await serviceGetAllSubmission(user);
+    if (submissions.error) {
+      res.status(submissions.error.status).json({ error: submissions.data });
+      return;
+    }
+
+    res.json(submissions.data);
+    return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
-
-  res.json(submissions.data);
 });
 
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
   const user = res.locals.user;
 
-  const service = await serviceGetSubmissionById(id, user);
-  if (service.success === undefined) {
-    sendHttpError({ res, error: service.error, message: service.data });
+  try {
+    const service = await serviceGetSubmissionById(id, user);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success).json(service.data);
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
-
-  res.status(service.success).json(service.data);
 });
 
 const responseSchema = z.object({
@@ -47,14 +58,19 @@ router.post("/response", async (req, res) => {
   }
 
   const user = res.locals.user;
+  try {
+    const service = await serviceResponseSubmission(id, user, accept);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
 
-  const service = await serviceResponseSubmission(id, user, accept);
-  if (service.success === undefined) {
-    sendHttpError({ res, error: service.error, message: service.data });
+    res.status(service.success).json(service.data);
+    return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
-
-  res.status(service.success).json(service.data);
 });
 
 export default router;

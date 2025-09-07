@@ -35,11 +35,13 @@ export async function serviceGetTitleById(
   // check if current user is the owner of the title or has an accepted submission to it
   const titleOwnerTeam = await TeamModel.findOne({ title: data.id });
   const acceptedSubmission = await SubmissionModel.findOne({
-    team: currentUser.team?.id,
+    team: currentUser.team?._id.toString(),
     team_target: titleOwnerTeam?.id,
     accepted: true,
   });
-  const allowGetProposal = !!(titleOwnerTeam?.id === currentUser.team?.id || acceptedSubmission);
+  const allowGetProposal = !!(
+    titleOwnerTeam?.id === currentUser.team?._id.toString() || acceptedSubmission
+  );
 
   const title: components["schemas"]["data-title"] = {
     id: data.id,
@@ -57,12 +59,12 @@ export async function serviceGetTitleById(
 
 export async function serviceCreateTitle(
   currentUser: UserClass,
-  payload: TitleClass,
+  payload: Omit<TitleClass, "id">,
 ): retService<components["schemas"]["data-title"]> {
   // check if current user is team leader
-  const currentTeam = await TeamModel.findOne({ id: currentUser.team?.id });
+  const currentTeam = await TeamModel.findById(currentUser.team?._id.toString());
   if (currentUser.email !== currentTeam?.leader_email) {
-    return { error: httpUnauthorizedError, data: "Only team leader can respond to submissions" };
+    return { error: httpUnauthorizedError, data: "Only team leader can create title" };
   }
 
   const data = await TitleModel.create(payload);
@@ -82,7 +84,7 @@ export async function serviceCreateTitle(
 export async function serviceUpdateTitle(
   id: string,
   currentUser: UserClass,
-  payload: TitleClass,
+  payload: Omit<TitleClass, "id">,
 ): retService<components["schemas"]["data-title"]> {
   const data = await TitleModel.findById(id);
   if (!data) {
