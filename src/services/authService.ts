@@ -20,6 +20,7 @@ export async function serviceSigninPassword(
     return { error: httpBadRequestError, data: "Invalid email or password" };
   }
 
+  // verify password
   const isValid = data.password ? await argon2.verify(data.password, params.password) : false;
   if (!isValid) {
     logger.info(`Invalid password for: ${params.email}`);
@@ -31,7 +32,7 @@ export async function serviceSigninPassword(
     name: data.name,
     email: data.email,
     cv_url: data.cv_url,
-    team_id: data.team?.id,
+    team_id: data.team?._id.toString(),
     google_id: data.google_id,
   };
   return { success: 200, data: user };
@@ -82,7 +83,7 @@ export async function serviceFindOrCreateGoogleUser(
     name: data.name,
     email: data.email,
     cv_url: data.cv_url,
-    team_id: data.team?.id,
+    team_id: data.team?._id.toString(),
     google_id: data.google_id,
   };
 
