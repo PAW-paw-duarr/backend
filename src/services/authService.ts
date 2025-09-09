@@ -5,7 +5,11 @@ import { logger } from "~/lib/logger.js";
 import { type createUserPasswordParams, UserModel } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
 import env from "~/utils/env.js";
-import { httpBadRequestError, httpInternalServerError } from "~/utils/httpError.js";
+import {
+  httpBadRequestError,
+  httpInternalServerError,
+  httpUnauthorizedError,
+} from "~/utils/httpError.js";
 
 type serviceSigninPasswordParams = {
   email: string;
@@ -24,7 +28,7 @@ export async function serviceSigninPassword(
   const isValid = data.password ? await argon2.verify(data.password, params.password) : false;
   if (!isValid) {
     logger.info(`Invalid password for: ${params.email}`);
-    return { error: httpBadRequestError, data: "Invalid email or password" };
+    return { error: httpUnauthorizedError, data: "Invalid email or password" };
   }
 
   const user: components["schemas"]["data-user"] = {
