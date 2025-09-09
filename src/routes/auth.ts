@@ -23,15 +23,20 @@ router.post("/signin/password", async (req, res) => {
     return;
   }
 
-  const resp = await serviceSigninPassword({ email, password });
+  try {
+    const resp = await serviceSigninPassword({ email, password });
 
-  if (resp.success === undefined) {
-    sendHttpError({ res, error: resp.error, message: resp.data });
+    if (resp.success === undefined) {
+      sendHttpError({ res, error: resp.error, message: resp.data });
+      return;
+    }
+
+    createUserSession({ req, res, user: resp.data });
+    return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
-
-  createUserSession({ req, res, user: resp.data });
-  return;
 });
 
 const passwordSignUpSchema = z.object({
@@ -60,7 +65,7 @@ router.post("/signup/password", async (req, res) => {
       sendHttpError({ res, error: resp.error, message: resp.data });
       return;
     }
-    res.status(201).json(resp.data);
+    res.status(resp.success).json(resp.data);
     return;
   } catch {
     sendHttpError({ res, error: httpInternalServerError });

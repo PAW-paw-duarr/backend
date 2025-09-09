@@ -740,6 +740,14 @@ export interface operations {
           "application/json": components["schemas"]["DefaultErrors"];
         };
       };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
     };
   };
   "patch-api-title": {
@@ -906,10 +914,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            id: string;
-            grand_design_url: string;
-          };
+          "application/json": components["schemas"]["data-submission"];
         };
       };
       400: {
@@ -971,10 +976,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            id: string;
-            accept: boolean;
-          };
+          "application/json": components["schemas"]["data-submission"];
         };
       };
       400: {
@@ -1339,10 +1341,26 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": Record<string, never>;
+          "application/json": components["schemas"]["data-user"];
         };
       };
       400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
         headers: {
           [name: string]: unknown;
         };
@@ -1374,6 +1392,14 @@ export interface operations {
         };
       };
       400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
         headers: {
           [name: string]: unknown;
         };
