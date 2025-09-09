@@ -24,7 +24,7 @@ export class SubmissionsClass {
   @prop({ required: true, type: String })
   public grand_design_url!: string;
 
-  @prop({ required: true, type: Boolean })
+  @prop({ type: Boolean })
   public accepted?: boolean;
 
   // get submission by id where current team is either the submitter or the target
