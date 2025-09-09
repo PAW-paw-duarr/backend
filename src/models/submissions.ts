@@ -24,10 +24,12 @@ export class SubmissionsClass {
   @prop({ required: true, type: String })
   public grand_design_url!: string;
 
-  @prop({ required: true, type: Boolean })
+  @prop({ type: Boolean })
   public accepted?: boolean;
 
-  // get submission by id where current team is either the submitter or the target
+  /**
+   * Find a submission by ID if the current team is either the submitter or the target.
+   */
   public static async findByIdLimited(
     this: ReturnModelType<typeof SubmissionsClass>,
     id: string,
@@ -39,11 +41,16 @@ export class SubmissionsClass {
     });
   }
 
+  /**
+   * Get all submissions from the database.
+   */
   public static async getAllData(this: ReturnModelType<typeof SubmissionsClass>) {
     return this.find({}, { id: 1, team: 1, team_target: 1, title: 1 });
   }
 
-  // get all submissions where current team is either the submitter or the target
+  /**
+   * Get all submissions if the current team is either the submitter or the target.
+   */
   public static async getAllDataLimited(
     this: ReturnModelType<typeof SubmissionsClass>,
     currentTeamId: string,
