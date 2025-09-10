@@ -19,7 +19,10 @@ import { TeamModel } from "~/models/teams.js";
 export async function serviceGetAllSubmissions(
   currentUser: UserClass,
 ): retService<components["schemas"]["data-submission-short"][]> {
-  const data = await SubmissionModel.getAllDataLimited(currentUser.team?.id);
+  const data = await SubmissionModel.getAllDataLimited(currentUser.team?._id.toString() || "");
+  if (!data) {
+    return { error: httpNotFoundError, data: "Submissions not found" };
+  }
 
   const submissions: components["schemas"]["data-submission-short"][] = data.map(
     (item): components["schemas"]["data-submission-short"] => ({
@@ -80,12 +83,23 @@ export async function serviceResponseSubmission(
     return { error: httpBadRequestError, data: "Invalid submission ID" };
   }
 
-  const currentTeam = await TeamModel.findOne({ id: currentUser.team?._id.toString() });
+  const currentTeam = await TeamModel.findOne(
+    { _id: currentUser.team?._id },
+    { id: 1, leader_email: 1 },
+  );
   if (currentUser.email !== currentTeam?.leader_email) {
     return { error: httpUnauthorizedError, data: "Only team leader can respond to submissions" };
   }
 
-  const data = await SubmissionModel.findOneAndUpdate({ id: id }, { accepted: accept });
+  const data = await SubmissionModel.findOneAndUpdate(
+    { _id: new mongoose.Types.ObjectId(id), team_target: currentTeam?.id },
+    {
+      accepted: accept,
+    },
+    {
+      new: true,
+    },
+  );
   if (!data) {
     return { error: httpNotFoundError, data: "Submission not found" };
   }
@@ -120,7 +134,9 @@ export async function serviceCreateASubmission(
     return { error: httpBadRequestError, data: "Invalid submission title ID" };
   }
 
-  const currentTeam = await TeamModel.findOne({ id: currentUser.team?._id.toString() });
+  const currentTeam = await TeamModel.findOne({ _id: currentUser.team?._id }, { leader_email: 1 });
+  console.log(currentUser.email);
+  console.log(currentTeam?.leader_email);
   if (currentUser.email !== currentTeam?.leader_email) {
     return { error: httpUnauthorizedError, data: "Only team leader can submit" };
   }
@@ -149,5 +165,5 @@ export async function serviceCreateASubmission(
     title_id: data.title._id.toString(),
   };
 
-  return { success: 200, data: submission };
+  return { success: 201, data: submission };
 }

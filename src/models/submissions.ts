@@ -5,6 +5,7 @@ import {
   type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
+import mongoose from "mongoose";
 import { TeamsClass } from "./teams.js";
 import { TitleClass } from "./titles.js";
 
@@ -35,10 +36,13 @@ export class SubmissionsClass {
     id: string,
     currentTeamId: string,
   ) {
-    return this.findOne({
-      id: id,
-      $or: [{ team: currentTeamId }, { team_target: currentTeamId }],
-    });
+    return this.findOne(
+      {
+        _id: new mongoose.Types.ObjectId(id),
+        $or: [{ team: currentTeamId }, { team_target: currentTeamId }],
+      },
+      { id: 1, team: 1, team_target: 1, title: 1, grand_design_url: 1, accepted: 1 },
+    );
   }
 
   /**
@@ -56,8 +60,8 @@ export class SubmissionsClass {
     currentTeamId: string,
   ) {
     return this.find(
-      { id: 1, team: 1, team_target: 1, title: 1 },
       { $or: [{ team_target: currentTeamId }, { team: currentTeamId }] },
+      { id: 1, team: 1, team_target: 1, title: 1 },
     );
   }
 }
