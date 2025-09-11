@@ -5,6 +5,7 @@ import {
   type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
+import mongoose from "mongoose";
 import { TeamsClass } from "./teams.js";
 import { TitleClass } from "./titles.js";
 
@@ -24,33 +25,43 @@ export class SubmissionsClass {
   @prop({ required: true, type: String })
   public grand_design_url!: string;
 
-  @prop({ required: true, type: Boolean })
+  @prop({ type: Boolean })
   public accepted?: boolean;
 
-  // get submission by id where current team is either the submitter or the target
+  /**
+   * Find a submission by ID if the current team is either the submitter or the target.
+   */
   public static async findByIdLimited(
     this: ReturnModelType<typeof SubmissionsClass>,
     id: string,
     currentTeamId: string,
   ) {
-    return this.findOne({
-      id: id,
-      $or: [{ team: currentTeamId }, { team_target: currentTeamId }],
-    });
+    return this.findOne(
+      {
+        _id: new mongoose.Types.ObjectId(id),
+        $or: [{ team: currentTeamId }, { team_target: currentTeamId }],
+      },
+      { id: 1, team: 1, team_target: 1, title: 1, grand_design_url: 1, accepted: 1 },
+    );
   }
 
+  /**
+   * Get all submissions from the database.
+   */
   public static async getAllData(this: ReturnModelType<typeof SubmissionsClass>) {
     return this.find({}, { id: 1, team: 1, team_target: 1, title: 1 });
   }
 
-  // get all submissions where current team is either the submitter or the target
+  /**
+   * Get all submissions if the current team is either the submitter or the target.
+   */
   public static async getAllDataLimited(
     this: ReturnModelType<typeof SubmissionsClass>,
     currentTeamId: string,
   ) {
     return this.find(
-      { id: 1, team: 1, team_target: 1, title: 1 },
       { $or: [{ team_target: currentTeamId }, { team: currentTeamId }] },
+      { id: 1, team: 1, team_target: 1, title: 1 },
     );
   }
 }
