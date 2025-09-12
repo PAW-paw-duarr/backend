@@ -1,11 +1,16 @@
+import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
 import { type UserClass, UserModel } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
-import { httpNotFoundError } from "~/utils/httpError.js";
+import { httpBadRequestError, httpNotFoundError } from "~/utils/httpError.js";
 
 export async function serviceGetUserById(
   id: string,
 ): retService<components["schemas"]["data-user"]> {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return { error: httpBadRequestError, data: "Invalid user ID" };
+  }
+
   const data = await UserModel.findById(id);
   if (!data) {
     return { error: httpNotFoundError, data: "User not found" };
@@ -48,4 +53,39 @@ export async function serviceUpdateUser(
   };
 
   return { success: 200, data: user };
+}
+
+// Admin service
+
+export async function serviceDeleteUserById(user_id: string): retService<undefined> {
+  if (!mongoose.Types.ObjectId.isValid(user_id)) {
+    return { error: httpBadRequestError, data: "Invalid user ID" };
+  }
+
+  const data = await UserModel.findById(user_id);
+  if (!data) {
+    return { error: httpNotFoundError, data: "User not found" };
+  }
+
+  await UserModel.deleteOne({ _id: user_id });
+
+  return { success: 204 };
+}
+
+export async function serviceAdminGetAllUsers(): retService<
+  components["schemas"]["data-user-short"][]
+> {
+  const data = await UserModel.find();
+  if (!data) {
+    return { error: httpNotFoundError, data: "Users not found" };
+  }
+
+  const users: components["schemas"]["data-user-short"][] = data.map(
+    (item): components["schemas"]["data-user-short"] => ({
+      id: item.id,
+      name: item.name,
+    }),
+  );
+
+  return { success: 200, data: users };
 }

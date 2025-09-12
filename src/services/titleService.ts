@@ -1,10 +1,15 @@
+import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
 import { SubmissionModel } from "~/models/submissions.js";
 import { TeamModel } from "~/models/teams.js";
 import { type TitleClass, TitleModel } from "~/models/titles.js";
 import type { UserClass } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
-import { httpBadRequestError, httpUnauthorizedError } from "~/utils/httpError.js";
+import {
+  httpBadRequestError,
+  httpNotFoundError,
+  httpUnauthorizedError,
+} from "~/utils/httpError.js";
 
 export async function serviceGetAllTitles(): retService<
   components["schemas"]["data-title-short"][]
@@ -27,9 +32,13 @@ export async function serviceGetTitleById(
   id: string,
   currentUser: UserClass,
 ): retService<components["schemas"]["data-title"]> {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return { error: httpBadRequestError, data: "Invalid title ID" };
+  }
+
   const data = await TitleModel.findById(id);
   if (!data) {
-    return { error: { status: 404, message: "Title not found" }, data: "Title not found" };
+    return { error: httpNotFoundError, data: "Title not found" };
   }
 
   // check if current user is the owner of the title or has an accepted submission to it
@@ -86,9 +95,13 @@ export async function serviceUpdateTitle(
   currentUser: UserClass,
   payload: Omit<TitleClass, "id">,
 ): retService<components["schemas"]["data-title"]> {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return { error: httpBadRequestError, data: "Invalid title ID" };
+  }
+
   const data = await TitleModel.findById(id);
   if (!data) {
-    return { error: { status: 404, message: "Title not found" }, data: "Title not found" };
+    return { error: httpNotFoundError, data: "Title not found" };
   }
 
   // check if current user is the owner leader of the title
@@ -109,7 +122,7 @@ export async function serviceUpdateTitle(
   await TitleModel.updateOne({ id }, payload);
   const updatedData = await TitleModel.findById(id);
   if (!updatedData) {
-    return { error: { status: 404, message: "Title not found" }, data: "Title not found" };
+    return { error: httpNotFoundError, data: "Title not found" };
   }
 
   const title: components["schemas"]["data-title"] = {
@@ -121,5 +134,47 @@ export async function serviceUpdateTitle(
     proposal_url: updatedData.proposal_url,
   };
 
+  return { success: 200, data: title };
+}
+
+// Admin service
+
+export async function serviceDeleteTitleById(title_id: string): retService<undefined> {
+  if (!mongoose.Types.ObjectId.isValid(title_id)) {
+    return { error: httpBadRequestError, data: "Invalid title ID" };
+  }
+
+  const data = await TitleModel.findById(title_id);
+  if (!data) {
+    return { error: httpNotFoundError, data: "Title not found" };
+  }
+
+  await TitleModel.deleteOne({ _id: title_id });
+  await TeamModel.updateMany({ title: title_id }, { title: null });
+  await SubmissionModel.deleteMany({ title: title_id });
+
+  return { success: 204 };
+}
+
+export async function serviceAdminGetTitleById(
+  id: string,
+): retService<components["schemas"]["data-title"]> {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return { error: httpBadRequestError, data: "Invalid submission ID" };
+  }
+
+  const data = await TitleModel.findById(id);
+  if (!data) {
+    return { error: httpNotFoundError, data: "Title not found" };
+  }
+
+  const title: components["schemas"]["data-title"] = {
+    id: data.id,
+    title: data.title,
+    desc: data.desc,
+    description: data.description,
+    photo_url: data.photo_url,
+    proposal_url: data.proposal_url,
+  };
   return { success: 200, data: title };
 }

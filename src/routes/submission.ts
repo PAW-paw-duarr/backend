@@ -1,25 +1,31 @@
+import path from "node:path";
 import express from "express";
 import z from "zod";
+import { safeUnlink } from "~/lib/file.js";
+import { uploadTmp } from "~/lib/multer.js";
+import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import {
+  serviceAdminDeleteSubmissionById,
+  serviceAdminGetAllSubmissions,
+  serviceAdminGetSubmissionById,
+  serviceCreateASubmission,
   serviceGetAllSubmissions,
   serviceGetSubmissionById,
   serviceResponseSubmission,
-  serviceCreateASubmission,
 } from "~/services/submissionService.js";
 import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpError.js";
-import { uploadTmp } from "~/lib/multer.js";
-import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
-import path from "node:path";
-import { safeUnlink } from "~/lib/file.js";
 
 const router = express.Router();
 
 router.get("/", async (_, res) => {
-  const user = res.locals.user;
+  const currentUser = res.locals.user;
 
   try {
-    const submissions = await serviceGetAllSubmissions(user);
-    if (submissions.error) {
+    const submissions = currentUser.is_admin
+      ? await serviceAdminGetAllSubmissions()
+      : await serviceGetAllSubmissions(currentUser);
+
+    if (submissions.success === undefined) {
       res.status(submissions.error.status).json({ error: submissions.data });
       return;
     }
@@ -33,11 +39,13 @@ router.get("/", async (_, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const titleId = req.params.id;
+  const submissionId = req.params.id;
   const currentUser = res.locals.user;
 
   try {
-    const service = await serviceGetSubmissionById(titleId, currentUser);
+    const service = currentUser.is_admin
+      ? await serviceAdminGetSubmissionById(submissionId)
+      : await serviceGetSubmissionById(submissionId, currentUser);
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
@@ -131,6 +139,33 @@ router.post("/response", async (req, res) => {
     }
 
     res.status(service.success).json(service.data);
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
+    return;
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  const user = res.locals.user;
+  if (!user.is_admin) {
+    sendHttpError({
+      res,
+      error: httpBadRequestError,
+      message: "Admin privilege required",
+    });
+    return;
+  }
+
+  try {
+    const service = await serviceAdminDeleteSubmissionById(id);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success);
+    return;
   } catch {
     sendHttpError({ res, error: httpInternalServerError });
     return;

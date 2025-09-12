@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
 import { SubmissionModel } from "~/models/submissions.js";
-import type { retService } from "~/types/service.js";
+import { TeamModel } from "~/models/teams.js";
 import type { UserClass } from "~/models/users.js";
+import type { retService } from "~/types/service.js";
 import {
   httpBadRequestError,
   httpInternalServerError,
   httpNotFoundError,
   httpUnauthorizedError,
 } from "~/utils/httpError.js";
-import { TeamModel } from "~/models/teams.js";
 
 /**
  * Service for /submission: get all submissions within restrictions.
@@ -166,4 +166,62 @@ export async function serviceCreateASubmission(
   };
 
   return { success: 201, data: submission };
+}
+
+// Admin service
+
+export async function serviceAdminDeleteSubmissionById(id: string): retService<undefined> {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return { error: httpBadRequestError, data: "Invalid submission ID" };
+  }
+
+  await SubmissionModel.findOneAndDelete({
+    _id: new mongoose.Types.ObjectId(id),
+  });
+
+  return { success: 204 };
+}
+
+export async function serviceAdminGetAllSubmissions(): retService<
+  components["schemas"]["data-submission-short"][]
+> {
+  const data = await SubmissionModel.find();
+  if (!data) {
+    return { error: httpNotFoundError, data: "Submissions not found" };
+  }
+
+  const submissions: components["schemas"]["data-submission-short"][] = data.map(
+    (item): components["schemas"]["data-submission-short"] => ({
+      id: item.id,
+      team_id: item.team._id.toString(),
+      team_target_id: item.team_target._id.toString(),
+      title_id: item.title?._id.toString(),
+    }),
+  );
+
+  return { success: 200, data: submissions };
+}
+
+export async function serviceAdminGetSubmissionById(
+  id: string,
+): retService<components["schemas"]["data-submission"]> {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return { error: httpBadRequestError, data: "Invalid submission ID" };
+  }
+
+  const data = await SubmissionModel.findById(id);
+  if (!data) {
+    return { error: httpNotFoundError, data: "Submission not found" };
+  }
+
+  const submissionData: components["schemas"]["data-submission"] = {
+    id: data.id,
+    team_id: data.team._id.toString(),
+    grand_design_url: data.grand_design_url,
+    team_target_id: data.team_target._id.toString(),
+    accepted: data.accepted ?? false,
+    title_id: data.title._id.toString(),
+  };
+
+  return { success: 200, data: submissionData };
 }

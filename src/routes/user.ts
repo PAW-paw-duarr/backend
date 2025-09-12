@@ -4,12 +4,34 @@ import z from "zod";
 import { safeUnlink } from "~/lib/file.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
-import { serviceGetUserById, serviceUpdateUser } from "~/services/userService.js";
+import {
+  serviceAdminGetAllUsers,
+  serviceGetUserById,
+  serviceUpdateUser,
+} from "~/services/userService.js";
 import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpError.js";
 
 const router = express.Router();
 
 router.get("/", async (_, res) => {
+  const currentUser = res.locals.user;
+
+  if (!currentUser.is_admin) {
+    sendHttpError({ res, error: httpBadRequestError, message: "Unauthorized" });
+    return;
+  }
+
+  const service = await serviceAdminGetAllUsers();
+  if (service.success === undefined) {
+    sendHttpError({ res, error: service.error, message: service.data });
+    return;
+  }
+
+  res.status(service.success).json(service.data);
+  return;
+});
+
+router.get("/me", async (_, res) => {
   const user = res.locals.user;
   res.status(200).json(user);
   return;

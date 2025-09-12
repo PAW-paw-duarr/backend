@@ -1,6 +1,8 @@
 import express from "express";
 import z from "zod";
 import {
+  serviceAdminGetAllTeams,
+  serviceAdminGetTeamById,
   serviceGetTeamById,
   serviceJoinTeam,
   serviceKickMemberTeam,
@@ -10,10 +12,9 @@ import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/u
 const router = express.Router();
 
 router.get("/", async (_, res) => {
-  const user = res.locals.user;
-
   try {
-    const service = await serviceGetTeamById(user.team?._id.toString() || "");
+    const service = await serviceAdminGetAllTeams();
+
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
@@ -28,9 +29,13 @@ router.get("/", async (_, res) => {
 
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
+  const currentUser = res.locals.user;
 
   try {
-    const service = await serviceGetTeamById(id);
+    const service = currentUser.is_admin
+      ? await serviceAdminGetTeamById(id)
+      : await serviceGetTeamById(currentUser.team?._id.toString() || "");
+
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
@@ -86,6 +91,35 @@ router.delete("/kick", async (req, res) => {
 
   try {
     const service = await serviceKickMemberTeam(user_id, user);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success);
+    return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
+    return;
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  const title_id = req.params.id;
+  const currentUser = res.locals.user;
+
+  if (!currentUser.is_admin) {
+    sendHttpError({
+      res,
+      error: httpBadRequestError,
+      message: "Admin privilege required",
+    });
+    return;
+  }
+
+  try {
+    const service = await serviceAdminGetTeamById(title_id);
+
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;

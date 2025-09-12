@@ -5,12 +5,19 @@ import { safeUnlink } from "~/lib/file.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import {
+  serviceAdminGetTitleById,
   serviceCreateTitle,
+  serviceDeleteTitleById,
   serviceGetAllTitles,
   serviceGetTitleById,
   serviceUpdateTitle,
 } from "~/services/titleService.js";
-import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpError.js";
+import {
+  httpBadRequestError,
+  httpInternalServerError,
+  httpUnauthorizedError,
+  sendHttpError,
+} from "~/utils/httpError.js";
 
 const router = Router();
 
@@ -34,7 +41,10 @@ router.get("/:id", async (req, res) => {
   const user = res.locals.user;
 
   try {
-    const service = await serviceGetTitleById(id, user);
+    const service = user.is_admin
+      ? await serviceAdminGetTitleById(id)
+      : await serviceGetTitleById(id, user);
+
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
@@ -186,6 +196,29 @@ router.patch("/:id", uploadUpdateTitle, async (req, res) => {
     return;
   } catch {
     await safeUnlink(proposalFile.path, photoFile.path);
+    sendHttpError({ res, error: httpInternalServerError });
+    return;
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  const user = res.locals.user;
+
+  if (user.is_admin !== true) {
+    sendHttpError({ res, error: httpUnauthorizedError, message: "Admin only" });
+    return;
+  }
+
+  try {
+    const service = await serviceDeleteTitleById(id);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success).json(service.data);
+  } catch {
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
