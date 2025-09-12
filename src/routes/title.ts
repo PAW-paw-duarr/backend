@@ -5,6 +5,7 @@ import { safeUnlink } from "~/lib/file.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import {
+  serviceAdminGetAllTitles,
   serviceAdminGetTitleById,
   serviceCreateTitle,
   serviceDeleteTitleById,
@@ -22,8 +23,9 @@ import {
 const router = Router();
 
 router.get("/", async (_, res) => {
+  const user = res.locals.user;
   try {
-    const service = await serviceGetAllTitles();
+    const service = user.is_admin ? await serviceAdminGetAllTitles() : await serviceGetAllTitles();
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;

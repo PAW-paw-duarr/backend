@@ -19,7 +19,17 @@ export class TitleClass {
   @prop({ required: true, type: String })
   public title!: string;
 
+  @prop({ type: Boolean })
+  public old?: boolean;
+
   public static async getAllData(this: ReturnModelType<typeof TitleClass>) {
+    return this.find(
+      { old: false },
+      { id: 1, desc: 1, description: 1, photo_url: 1, proposal_url: 1, title: 1 },
+    );
+  }
+
+  public static async getAllDataWithOld(this: ReturnModelType<typeof TitleClass>) {
     return this.find(
       {},
       { id: 1, desc: 1, description: 1, photo_url: 1, proposal_url: 1, title: 1 },
