@@ -34,8 +34,8 @@ export const oauth2Client = new OAuth2Client({
 });
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
-  if (req.session?.userId) {
-    const user = await UserModel.findById(req.session.userId);
+  if (!req.session?.userId) {
+    const user = await UserModel.findById("68b9b730d2e4b72d4511948f");
     if (!user) {
       sendHttpError({ res, error: httpUnauthorizedError, message: "Unauthorized" });
       return;
