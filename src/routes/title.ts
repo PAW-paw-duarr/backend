@@ -1,16 +1,17 @@
-import { Router } from "express";
 import path from "node:path";
+import { Router } from "express";
 import z from "zod";
 import { safeUnlink } from "~/lib/file.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import {
-  serviceGetAllTitles,
-  servicesAdminGetTitleByID,
-  serviceUpdateTitle,
-  serviceGetTitleByID,
+  serviceAdminDeleteTitleByID,
+  serviceAdminGetAllTitles,
+  serviceAdminGetTitleByID,
   serviceCreateTitle,
-  serviceDeleteTitleByID,
+  serviceGetAllTitles,
+  serviceGetTitleByID,
+  serviceUpdateTitle,
 } from "~/services/titleService.js";
 import {
   httpBadRequestError,
@@ -30,8 +31,12 @@ router.get("/", async (_, res) => {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
     }
+
+    res.status(service.success).json(service.data);
+    return;
   } catch {
     sendHttpError({ res, error: httpInternalServerError });
+    return;
   }
 });
 
@@ -42,7 +47,7 @@ router.get("/:id", async (req, res) => {
 
   try {
     const service = user.is_admin
-      ? await servicesAdminGetTitleByID(id)
+      ? await serviceAdminGetTitleByID(id)
       : await serviceGetTitleByID(id, user);
 
     if (service.success === undefined) {
@@ -100,8 +105,8 @@ router.post("/", uploadCreateTitle, async (req, res) => {
   try {
     // Upload files to S3
     const uploadProposalKey = await putFromDisk(
-      proposalKey,
       proposalFile.path,
+      proposalKey,
       proposalFile.mimetype,
     );
     const uploadPhotoKey = await putFromDisk(photoFile.path, photoKey, photoFile.mimetype);
@@ -183,9 +188,9 @@ router.patch("/:id", uploadUpdateTitle, async (req, res) => {
     await safeUnlink(proposalFile.path, photoFile.path);
 
     const service = await serviceUpdateTitle(id, user, {
-      title: parseResult.data.title ?? "",
-      desc: parseResult.data.desc ?? "",
-      description: parseResult.data.description ?? "",
+      title: parseResult.data.title,
+      desc: parseResult.data.desc,
+      description: parseResult.data.description,
       proposal_url: publicUrlFromKey(uploadedProposalKey),
       photo_url: publicUrlFromKey(uploadedPhotoKey),
     });
@@ -215,10 +220,12 @@ router.delete("/:id", async (req, res) => {
   }
 
   try {
-    const service = await serviceDeleteTitleByID(id);
+    const service = await serviceAdminDeleteTitleByID(id);
     if (service.success === undefined) {
-      return sendHttpError({ res, error: service.error, message: service.data });
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
     }
+    res.status(service.success);
   } catch {
     sendHttpError({ res, error: httpInternalServerError });
     return;

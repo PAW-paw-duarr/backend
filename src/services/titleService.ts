@@ -1,15 +1,15 @@
-import { SubmissionModel } from "~/models/submissions.js";
-import type { UserClass } from "~/models/users.js";
+import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
-import { type TitleClass, TitleModel } from "~/models/titles.js";
-import type { retService } from "~/types/service.js";
+import { SubmissionModel } from "~/models/submissions.js";
 import { TeamModel } from "~/models/teams.js";
+import { type TitleClass, TitleModel } from "~/models/titles.js";
+import type { UserClass } from "~/models/users.js";
+import type { retService } from "~/types/service.js";
 import {
-  httpUnauthorizedError,
   httpBadRequestError,
   httpNotFoundError,
+  httpUnauthorizedError,
 } from "~/utils/httpError.js";
-import mongoose from "mongoose";
 
 export async function serviceGetAllTitles(): retService<
   components["schemas"]["data-title-short"][]
@@ -43,7 +43,7 @@ export async function serviceGetTitleByID(
   }
 
   // check if the user is owner of the title or has an accepted submission to it
-  const titleOwnerTeam = await TitleModel.findOne({ title: data.id });
+  const titleOwnerTeam = await TeamModel.findOne({ title: data.id });
   const acceptedSubmission = await SubmissionModel.findOne({
     team: currentUser.team?._id.toString(),
     title: data.id,
@@ -93,7 +93,7 @@ export async function serviceCreateTitle(
 export async function serviceUpdateTitle(
   id: string,
   currentUser: UserClass,
-  payload: Omit<TitleClass, "id">,
+  payload: Partial<Omit<TitleClass, "id">>,
 ): retService<components["schemas"]["data-title"]> {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return { error: httpBadRequestError, data: "Invalid title ID" };
@@ -106,9 +106,9 @@ export async function serviceUpdateTitle(
 
   // check if current user is team leader and the owner of the title
   const titleOwnerTeam = await TeamModel.findOne({ title: data.id });
-  if (titleOwnerTeam?.id !== currentUser.team?._id.toString()) {
+  if (titleOwnerTeam?.leader_email !== currentUser.email) {
     return {
-      error: httpBadRequestError,
+      error: httpUnauthorizedError,
       data: "Only team leader and owner of the title can update title",
     };
   }
@@ -141,7 +141,7 @@ export async function serviceUpdateTitle(
 }
 
 // Admin Services
-export async function serviceDeleteTitleByID(title_id: string): retService<undefined> {
+export async function serviceAdminDeleteTitleByID(title_id: string): retService<undefined> {
   if (!mongoose.Types.ObjectId.isValid(title_id)) {
     return { error: httpBadRequestError, data: "Invalid title ID" };
   }
@@ -159,11 +159,11 @@ export async function serviceDeleteTitleByID(title_id: string): retService<undef
 }
 
 // Services for admin to Get title by ID
-export async function servicesAdminGetTitleByID(
+export async function serviceAdminGetTitleByID(
   id: string,
 ): retService<components["schemas"]["data-title"]> {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return { error: httpBadRequestError, data: "Invalid Submission ID" };
+    return { error: httpBadRequestError, data: "Invalid Title ID" };
   }
 
   const data = await TitleModel.findById(id);
