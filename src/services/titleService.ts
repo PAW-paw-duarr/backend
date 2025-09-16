@@ -147,7 +147,7 @@ export async function serviceDeleteTitleByID(title_id: string): retService<undef
     return { error: httpNotFoundError, data: "Title not found" };
   }
 
-  await TitleModel.deleteOne({ id: title_id });
+  await TitleModel.deleteOne({ _id: title_id });
   await SubmissionModel.deleteMany({ title: title_id });
   await TeamModel.updateMany({ title: title_id }, { title: null });
 
