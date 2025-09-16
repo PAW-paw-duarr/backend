@@ -107,7 +107,7 @@ router.post("/", uploadCreateTitle, async (req, res) => {
       proposalFile.path,
       proposalFile.mimetype,
     );
-    const uploadPhotoKey = await putFromDisk(photoKey, photoFile.path, photoFile.mimetype);
+    const uploadPhotoKey = await putFromDisk(photoFile.path, photoKey, photoFile.mimetype);
 
     //tmp files no longer needed
     await safeUnlink(proposalFile.path, photoFile.path);
