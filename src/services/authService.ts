@@ -2,7 +2,7 @@ import argon2 from "argon2";
 import type { components } from "~/lib/api/schema.js";
 import { oauth2Client } from "~/lib/auth.js";
 import { logger } from "~/lib/logger.js";
-import { type createUserPasswordParams, UserModel } from "~/models/users.js";
+import UserModel, { type CreateUserPasswordParams } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
 import env from "~/utils/env.js";
 import {
@@ -43,7 +43,7 @@ export async function serviceSigninPassword(
 }
 
 export async function serviceSignupPassword(
-  params: createUserPasswordParams,
+  params: CreateUserPasswordParams,
 ): retService<components["schemas"]["data-user"]> {
   params.password = await argon2.hash(params.password);
   const data = await UserModel.createUserPassword(params);
@@ -76,7 +76,11 @@ export async function serviceFindOrCreateGoogleUser(
     return { error: httpInternalServerError };
   }
 
-  const data = await UserModel.createOrFindUsergoogle({
+  if (!userInfo.email) {
+    logger.error("Google user info does not contain an email");
+    return { error: httpInternalServerError };
+  }
+  const data = await UserModel.createOrFindUserGoogle({
     name: userInfo.name,
     email: userInfo.email,
     google_id: userInfo.sub,
