@@ -131,6 +131,7 @@ export async function serviceUpdateTitle(
     desc: updatedData.desc,
     description: updatedData.description,
     photo_url: updatedData.photo_url,
+    proposal_url: updatedData.proposal_url,
   };
 
   return { success: 200, data: title };
