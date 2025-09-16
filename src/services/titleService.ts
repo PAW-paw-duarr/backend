@@ -97,7 +97,7 @@ export async function serviceUpdateTitle(
 
   const data = await TitleModel.findById(id);
   if (!data) {
-    return { error: httpBadRequestError, data: "Title not found" };
+    return { error: httpNotFoundError, data: "Title not found" };
   }
 
   // check if current user is team leader and the owner of the title
