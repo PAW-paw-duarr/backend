@@ -178,22 +178,19 @@ export async function servicesAdminGetTitleByID(
 }
 
 // Services for admin to Get all titles with detailed info
-export async function servicesAdminGetAllTitles(): retService<
-  components["schemas"]["data-title"][]
+export async function serviceAdminGetAllTitles(): retService<
+  components["schemas"]["data-title-short"][]
 > {
-  const data = await TitleModel.getAllData();
-  if (!data) {
-    return { error: httpNotFoundError, data: "No titles found" };
-  }
+  const data = await TitleModel.getAllDataWithOld();
 
-  const titles: components["schemas"]["data-title"][] = data.map((item) => ({
-    id: item.id,
-    title: item.title,
-    desc: item.desc,
-    description: item.description,
-    photo_url: item.photo_url,
-    proposal_url: item.proposal_url,
-  }));
+  const titles: components["schemas"]["data-title-short"][] = data.map(
+    (item): components["schemas"]["data-title-short"] => ({
+      id: item.id,
+      title: item.title,
+      desc: item.desc,
+      photo_url: item.photo_url,
+    }),
+  );
 
   return { success: 200, data: titles };
 }
