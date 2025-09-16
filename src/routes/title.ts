@@ -96,7 +96,7 @@ router.post("/", uploadCreateTitle, async (req, res) => {
     return;
   }
 
-  const uid = crypto;
+  const uid = crypto.randomUUID();
   const proposalKey = `proposals/${uid}-${path.extname(proposalFile.originalname).toLowerCase()}`;
   const photoKey = `photos/${uid}-${path.extname(photoFile.originalname).toLowerCase()}`;
 
