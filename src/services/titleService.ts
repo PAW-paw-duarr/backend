@@ -111,7 +111,6 @@ export async function serviceUpdateTitle(
 
   //check if has already submission to this title
   const hasSubmission = await SubmissionModel.exists({
-    team: currentUser.team?._id.toString(),
     title: data.id,
   });
   if (hasSubmission) {
