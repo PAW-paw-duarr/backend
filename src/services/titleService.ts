@@ -33,9 +33,13 @@ export async function serviceGetTitleByID(
   id: string,
   currentUser: UserClass,
 ): retService<components["schemas"]["data-title"]> {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return { error: httpBadRequestError, data: "Invalid title ID" };
+  }
+
   const data = await TitleModel.findById(id);
   if (!data) {
-    return { error: httpBadRequestError, data: "Title not found" };
+    return { error: httpNotFoundError, data: "Title not found" };
   }
 
   // check if the user is owner of the title or has an accepted submission to it
