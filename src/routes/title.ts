@@ -25,7 +25,7 @@ const router = Router();
 router.get("/", async (_, res) => {
   const user = res.locals.user;
   try {
-    const service = user.is_admin ? await serviceGetAllTitles() : await serviceGetAllTitles();
+    const service = user.is_admin ? await serviceAdminGetAllTitles() : await serviceGetAllTitles();
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
