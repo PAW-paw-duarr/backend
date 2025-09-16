@@ -163,10 +163,7 @@ router.patch("/:id", uploadUpdateTitle, async (req, res) => {
     return;
   }
 
-  if (
-    (proposalFile && proposalFile.mimetype !== "application/pdf") ||
-    (photoFile && !/^image\/(png|jpe?g|gif|webp)$/.test(photoFile.mimetype))
-  ) {
+  if (proposalFile.mimetype !== "application/pdf" || !/^image\//.test(photoFile.mimetype)) {
     await safeUnlink(proposalFile.path, photoFile.path);
     sendHttpError({ res, error: httpBadRequestError, message: "Invalid file type" });
     return;
