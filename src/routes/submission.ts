@@ -5,9 +5,6 @@ import { safeUnlink } from "~/lib/file.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import {
-  serviceAdminDeleteSubmissionById,
-  serviceAdminGetAllSubmissions,
-  serviceAdminGetSubmissionById,
   serviceCreateASubmission,
   serviceGetAllSubmissions,
   serviceGetSubmissionById,
@@ -18,14 +15,11 @@ import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/u
 const router = express.Router();
 
 router.get("/", async (_, res) => {
-  const currentUser = res.locals.user;
+  const user = res.locals.user;
 
   try {
-    const submissions = currentUser.is_admin
-      ? await serviceAdminGetAllSubmissions()
-      : await serviceGetAllSubmissions(currentUser);
-
-    if (submissions.success === undefined) {
+    const submissions = await serviceGetAllSubmissions(user);
+    if (submissions.error) {
       res.status(submissions.error.status).json({ error: submissions.data });
       return;
     }
@@ -39,13 +33,11 @@ router.get("/", async (_, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const submissionId = req.params.id;
+  const titleId = req.params.id;
   const currentUser = res.locals.user;
 
   try {
-    const service = currentUser.is_admin
-      ? await serviceAdminGetSubmissionById(submissionId)
-      : await serviceGetSubmissionById(submissionId, currentUser);
+    const service = await serviceGetSubmissionById(titleId, currentUser);
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
@@ -139,33 +131,6 @@ router.post("/response", async (req, res) => {
     }
 
     res.status(service.success).json(service.data);
-  } catch {
-    sendHttpError({ res, error: httpInternalServerError });
-    return;
-  }
-});
-
-router.delete("/:id", async (req, res) => {
-  const id = req.params.id;
-  const user = res.locals.user;
-  if (!user.is_admin) {
-    sendHttpError({
-      res,
-      error: httpBadRequestError,
-      message: "Admin privilege required",
-    });
-    return;
-  }
-
-  try {
-    const service = await serviceAdminDeleteSubmissionById(id);
-    if (service.success === undefined) {
-      sendHttpError({ res, error: service.error, message: service.data });
-      return;
-    }
-
-    res.status(service.success);
-    return;
   } catch {
     sendHttpError({ res, error: httpInternalServerError });
     return;

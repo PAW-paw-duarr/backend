@@ -1,10 +1,9 @@
 export default {
     "**/*.ts": [
         () => "tsc --noEmit",
-        "biome lint --write .",
-        "biome format . --fix"
+        "biome check .",
     ],
     "*": [
-        "biome format . --write"
+        "biome check .",
     ]
 }
