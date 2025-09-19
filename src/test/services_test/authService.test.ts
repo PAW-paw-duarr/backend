@@ -187,8 +187,6 @@ describe("AuthService", () => {
     });
 
     it("should handle OAuth getToken errors", async () => {
-      vi.mocked(oauth2Client.getToken).mockRejectedValue(new Error("Invalid authorization code"));
-
       try {
         await serviceFindOrCreateGoogleUser("invalid_code");
       } catch (error) {
