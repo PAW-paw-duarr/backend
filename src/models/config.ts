@@ -11,12 +11,13 @@ export class ConfigClass {
   public current_period!: number;
 
   public static async getConfig(this: ReturnModelType<typeof ConfigModel>) {
-    const config = await this.findOne({ config_id: 1 });
-    if (!config) {
-      // TODO: handle this case properly
-      return { current_period: 0, config_id: 0 };
+    const existingConfig = await this.findOne({ config_id: 1 });
+    if (!existingConfig) {
+      const newConfig = new this({ config_id: 1, current_period: 1 });
+      await newConfig.save();
+      return newConfig;
     }
-    return config;
+    return existingConfig;
   }
 }
 
