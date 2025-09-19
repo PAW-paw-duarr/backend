@@ -1,6 +1,5 @@
 import argon2 from "argon2";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
-import { oauth2Client } from "~/lib/auth.js";
 import { UserModel } from "~/models/users.js";
 import {
   serviceFindOrCreateGoogleUser,
