@@ -1,6 +1,5 @@
-import assert from "node:assert";
 import mongoose from "mongoose";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it } from "vitest";
 import type { components } from "~/lib/api/schema.js";
 import { ConfigModel } from "~/models/config.js";
 import { TeamModel } from "~/models/teams.js";
@@ -138,7 +137,6 @@ describe("TitleService", () => {
       };
 
       const result = await serviceCreateTitle(user!, newTitle);
-      console.log(result);
 
       expect(result.error?.status).toBe(401);
       expect(result.data).toBe("Only team leader can create title");
