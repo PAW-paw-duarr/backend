@@ -1,25 +1,30 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
+import { ConfigModel } from "~/models/config.js";
+import { SubmissionModel } from "~/models/submissions.js";
+import { TeamModel } from "~/models/teams.js";
+import { TitleModel } from "~/models/titles.js";
+import { UserModel } from "~/models/users.js";
 
 let mongod: MongoMemoryServer;
 
-export const connect = async (): Promise<void> => {
+export async function connect(): Promise<void> {
   mongod = await MongoMemoryServer.create();
   await mongoose.connect(mongod.getUri());
-  console.log("Test MongoDB connected");
-};
+}
 
-export const closeDatabase = async (): Promise<void> => {
+export async function closeDatabase(): Promise<void> {
   if (mongoose.connection.readyState) {
     await mongoose.connection.dropDatabase();
     await mongoose.connection.close();
     await mongod?.stop();
-    console.log("Test MongoDB connection closed");
   }
-};
+}
 
-export const clearDatabase = async (): Promise<void> => {
-  const collections = mongoose.connection.collections;
-  await Promise.all(Object.values(collections).map((collection) => collection.deleteMany({})));
-  console.log("Test MongoDB collections cleared");
-};
+export async function clearDatabase(): Promise<void> {
+  await ConfigModel.deleteMany({});
+  await SubmissionModel.deleteMany({});
+  await TeamModel.deleteMany({});
+  await TitleModel.deleteMany({});
+  await UserModel.deleteMany({});
+}

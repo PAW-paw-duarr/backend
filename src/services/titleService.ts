@@ -124,7 +124,7 @@ export async function serviceUpdateTitle(
   }
 
   // update the title
-  await TitleModel.updateOne({ id }, payload);
+  await TitleModel.findByIdAndUpdate(id, payload);
   const updatedData = await TitleModel.findById(id);
   if (!updatedData) {
     return { error: httpNotFoundError, data: "Title not found after update" };
