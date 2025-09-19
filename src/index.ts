@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import app from "~/app.js";
 import { logger } from "~/lib/logger.js";
 import env, { validateEnv } from "~/utils/env.js";
+import { ConfigModel } from "./models/config.js";
 import { TMP_DIR } from "./utils/constants.js";
 
 async function main() {
@@ -14,6 +15,8 @@ async function main() {
   await connectMongo();
 
   await fsPromises.mkdir(TMP_DIR, { recursive: true });
+
+  await ConfigModel.getConfig(); // Ensure config document exists
 
   const server = http.createServer(app);
 
