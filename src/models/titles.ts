@@ -19,21 +19,28 @@ export class TitleClass {
   @prop({ required: true, type: String })
   public title!: string;
 
-  @prop({ type: Boolean })
-  public old?: boolean;
+  @prop({ required: true, type: Number })
+  public period!: number;
+
+  public static async getAllDataPrevPeriod(
+    this: ReturnModelType<typeof TitleClass>,
+    currentPeriod: number,
+  ) {
+    return this.find(
+      { period: currentPeriod - 1 },
+      { id: 1, desc: 1, description: 1, photo_url: 1, proposal_url: 1, title: 1 },
+    )
+      .lean()
+      .exec();
+  }
 
   public static async getAllData(this: ReturnModelType<typeof TitleClass>) {
     return this.find(
-      { old: { $ne: true } },
-      { id: 1, desc: 1, description: 1, photo_url: 1, proposal_url: 1, title: 1 },
-    );
-  }
-
-  public static async getAllDataWithOld(this: ReturnModelType<typeof TitleClass>) {
-    return this.find(
       {},
       { id: 1, desc: 1, description: 1, photo_url: 1, proposal_url: 1, title: 1 },
-    );
+    )
+      .lean()
+      .exec();
   }
 }
 
