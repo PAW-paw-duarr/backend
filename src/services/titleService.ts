@@ -15,8 +15,8 @@ import {
 export async function serviceGetAllTitles(): retService<
   components["schemas"]["data-title-short"][]
 > {
-  const currentPeriod = await ConfigModel.getConfig();
-  const data = await TitleModel.getAllDataPrevPeriod(currentPeriod.current_period);
+  const config = await ConfigModel.getConfig();
+  const data = await TitleModel.find({ period: config.current_period - 1 });
 
   const titles: components["schemas"]["data-title-short"][] = data.map(
     (item): components["schemas"]["data-title-short"] => ({
@@ -50,9 +50,7 @@ export async function serviceGetTitleByID(
     team: currentUser.team?._id.toString(),
     title: data.id,
     accepted: true,
-  })
-    .lean()
-    .exec();
+  });
   const allowGetProposal = !!(
     titleOwnerTeam?.id === currentUser.team?._id.toString() || acceptedSubmission
   );
@@ -73,7 +71,7 @@ export async function serviceGetTitleByID(
 // POST /titles
 export async function serviceCreateTitle(
   currentUser: UserClass,
-  payload: Omit<TitleClass, "id" | "period">,
+  payload: Omit<TitleClass, "id">,
 ): retService<components["schemas"]["data-title"]> {
   // check if current user is team leader
   const userTeam = await TeamModel.findById(currentUser.team?._id.toString());
@@ -103,7 +101,7 @@ export async function serviceUpdateTitle(
     return { error: httpBadRequestError, data: "Invalid title ID" };
   }
 
-  const data = await TitleModel.findById(id).lean().exec();
+  const data = await TitleModel.findById(id);
   if (!data) {
     return { error: httpNotFoundError, data: "Title not found" };
   }
@@ -127,7 +125,7 @@ export async function serviceUpdateTitle(
 
   // update the title
   await TitleModel.updateOne({ id }, payload);
-  const updatedData = await TitleModel.findById(id).lean().exec();
+  const updatedData = await TitleModel.findById(id);
   if (!updatedData) {
     return { error: httpNotFoundError, data: "Title not found after update" };
   }
@@ -150,12 +148,11 @@ export async function serviceAdminDeleteTitleByID(title_id: string): retService<
     return { error: httpBadRequestError, data: "Invalid title ID" };
   }
 
-  const data = await TitleModel.findById(title_id).lean().exec();
+  const data = await TitleModel.findByIdAndDelete(title_id);
   if (!data) {
     return { error: httpNotFoundError, data: "Title not found" };
   }
 
-  await TitleModel.deleteOne({ _id: title_id });
   await SubmissionModel.deleteMany({ title: title_id });
   await TeamModel.updateMany({ title: title_id }, { title: null });
 
@@ -170,7 +167,7 @@ export async function serviceAdminGetTitleByID(
     return { error: httpBadRequestError, data: "Invalid Title ID" };
   }
 
-  const data = await TitleModel.findById(id).lean().exec();
+  const data = await TitleModel.findById(id);
   if (!data) {
     return { error: httpNotFoundError, data: "Title not found" };
   }
@@ -189,7 +186,7 @@ export async function serviceAdminGetTitleByID(
 export async function serviceAdminGetAllTitles(): retService<
   components["schemas"]["data-title-short"][]
 > {
-  const data = await TitleModel.getAllData();
+  const data = await TitleModel.find();
 
   const titles: components["schemas"]["data-title-short"][] = data.map(
     (item): components["schemas"]["data-title-short"] => ({
