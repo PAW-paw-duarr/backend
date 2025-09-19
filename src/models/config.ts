@@ -8,11 +8,16 @@ export class ConfigClass {
   public config_id!: number;
 
   @prop({ required: true, type: Number })
-  public current_period!: string;
+  public current_period!: number;
 
   public static async getConfig(this: ReturnModelType<typeof ConfigModel>) {
-    const config = await this.findOne({ config_id: 1 });
-    return config;
+    const existingConfig = await this.findOne({ config_id: 1 });
+    if (!existingConfig) {
+      const newConfig = new this({ config_id: 1, current_period: 1 });
+      await newConfig.save();
+      return newConfig;
+    }
+    return existingConfig;
   }
 }
 
