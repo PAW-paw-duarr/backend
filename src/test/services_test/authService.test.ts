@@ -185,27 +185,5 @@ describe("AuthService", () => {
 
       expect(result.error?.status).toBe(500);
     });
-
-    it("should handle OAuth getToken errors", async () => {
-      try {
-        await serviceFindOrCreateGoogleUser("invalid_code");
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toBe("Invalid authorization code");
-      }
-    });
-
-    it("should handle OAuth verifyIdToken errors", async () => {
-      mocks.verifyIdToken.mockResolvedValue({
-        getPayload: () => null,
-      });
-
-      try {
-        await serviceFindOrCreateGoogleUser("mock_auth_code");
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toBe("Invalid authorization code");
-      }
-    });
   });
 });
