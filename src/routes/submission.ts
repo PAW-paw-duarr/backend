@@ -5,6 +5,9 @@ import { safeUnlink } from "~/lib/file.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import {
+  serviceAdminDeleteSubmissionById,
+  serviceAdminGetAllSubmissions,
+  serviceAdminGetSubmissionById,
   serviceCreateASubmission,
   serviceGetAllSubmissions,
   serviceGetSubmissionById,
@@ -15,11 +18,13 @@ import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/u
 const router = express.Router();
 
 router.get("/", async (_, res) => {
-  const user = res.locals.user;
+  const currentUser = res.locals.user;
 
   try {
-    const submissions = await serviceGetAllSubmissions(user);
-    if (submissions.error) {
+    const submissions = currentUser.is_admin
+      ? await serviceAdminGetAllSubmissions()
+      : await serviceGetAllSubmissions(currentUser);
+    if (submissions.success === undefined) {
       res.status(submissions.error.status).json({ error: submissions.data });
       return;
     }
@@ -33,11 +38,13 @@ router.get("/", async (_, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const titleId = req.params.id;
+  const id = req.params.id;
   const currentUser = res.locals.user;
 
   try {
-    const service = await serviceGetSubmissionById(titleId, currentUser);
+    const service = currentUser.is_admin
+      ? await serviceAdminGetSubmissionById(id)
+      : await serviceGetSubmissionById(id, currentUser);
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
@@ -51,15 +58,15 @@ router.get("/:id", async (req, res) => {
 });
 
 const submitSchema = z.object({
-  title_id: z.string(),
+  team_target_id: z.string(),
 });
 const uploadGrandDesign = uploadTmp.fields([{ name: "grand_design", maxCount: 1 }]);
 router.post("/submit", uploadGrandDesign, async (req, res) => {
-  const { title_id } = req.body;
+  const { team_target_id } = req.body;
   const files = req.files as Record<string, Express.Multer.File[]>;
   const grandDesign = files?.grand_design?.[0];
 
-  const parseReqBody = submitSchema.safeParse({ title_id });
+  const parseReqBody = submitSchema.safeParse({ team_target_id });
   if (!parseReqBody.success) {
     await safeUnlink(grandDesign?.path);
     res.status(400).json({ error: "Invalid request", details: z.treeifyError(parseReqBody.error) });
@@ -92,7 +99,7 @@ router.post("/submit", uploadGrandDesign, async (req, res) => {
     await safeUnlink(grandDesign.path);
 
     const service = await serviceCreateASubmission(user, {
-      title_id,
+      team_target_id,
       grand_design_url: publicUrlFromKey(uploadedGrandDesignKey),
     });
 
@@ -125,6 +132,33 @@ router.post("/response", async (req, res) => {
   const user = res.locals.user;
   try {
     const service = await serviceResponseSubmission(id, user, accept);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success).json(service.data);
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
+    return;
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  const currentUser = res.locals.user;
+
+  if (!currentUser.is_admin) {
+    sendHttpError({
+      res,
+      error: httpBadRequestError,
+      message: "Only ADMIN can delete submissions",
+    });
+    return;
+  }
+
+  try {
+    const service = await serviceAdminDeleteSubmissionById(id);
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
