@@ -11,10 +11,10 @@ import { TeamsClass } from "./teams.js";
 export class UserClass {
   public id!: string;
 
-  @prop({ required: true, type: String })
+  @prop({ required: true, type: String, trim: true })
   public name!: string;
 
-  @prop({ required: true, unique: true, type: String })
+  @prop({ required: true, unique: true, type: String, lowercase: true, trim: true })
   public email!: string;
 
   @prop({ type: String })

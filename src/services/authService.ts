@@ -54,7 +54,7 @@ export async function serviceSignupPassword(
   const user: components["schemas"]["data-user"] = {
     id: data.id,
     name: data.name,
-    email: data.email,
+    email: data.email.toLowerCase(),
   };
   return { success: 201, data: user };
 }
@@ -71,7 +71,7 @@ export async function serviceFindOrCreateGoogleUser(
   });
 
   const userInfo = ticket.getPayload();
-  if (!userInfo) {
+  if (!userInfo || !userInfo.email || !userInfo.name || !userInfo.sub) {
     logger.error("Failed to retrieve user info from Google ID token");
     return { error: httpInternalServerError };
   }
