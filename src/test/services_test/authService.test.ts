@@ -12,7 +12,7 @@ import { clearDatabase } from "../database/helper.js";
 describe("AuthService", () => {
   beforeEach(async () => {
     // Create test users with hashed passwords
-    for (const user of userData) {
+    for (const user of Object.values(userData)) {
       const hashedPassword = user.password ? await argon2.hash(user.password) : undefined;
       await UserModel.create({
         ...user,
@@ -29,15 +29,15 @@ describe("AuthService", () => {
   describe("signin with password", () => {
     it("should signin with valid credentials", async () => {
       const result = await serviceSigninPassword({
-        email: userData[0].email,
-        password: userData[0].password!,
+        email: userData.teamLeaderWithTitle.email,
+        password: userData.teamLeaderWithTitle.password!,
       });
 
       expect(result.success).toBe(200);
       assert(result.success === 200);
       expect(result.data).toBeDefined();
-      expect(result.data!.email).toBe(userData[0].email);
-      expect(result.data!.name).toBe(userData[0].name);
+      expect(result.data!.email).toBe(userData.teamLeaderWithTitle.email);
+      expect(result.data!.name).toBe(userData.teamLeaderWithTitle.name);
     });
 
     it("should return 400 for invalid email", async () => {
@@ -52,7 +52,7 @@ describe("AuthService", () => {
 
     it("should return 401 for invalid password", async () => {
       const result = await serviceSigninPassword({
-        email: userData[0].email,
+        email: userData.teamLeaderWithTitle.email,
         password: "wrongpassword",
       });
 
@@ -104,7 +104,7 @@ describe("AuthService", () => {
     it("should return 400 for duplicate email", async () => {
       const duplicateUser = {
         name: "Duplicate User",
-        email: userData[0].email,
+        email: userData.teamLeaderWithTitle.email,
         password: "password",
       };
 

@@ -4,7 +4,6 @@ import z from "zod";
 import { safeUnlink } from "~/lib/file.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
-import { ConfigModel } from "~/models/config.js";
 import {
   serviceAdminDeleteTitleByID,
   serviceAdminGetAllTitles,
@@ -115,14 +114,12 @@ router.post("/", uploadCreateTitle, async (req, res) => {
     //tmp files no longer needed
     await safeUnlink(proposalFile.path, photoFile.path);
 
-    const config = await ConfigModel.getConfig();
     const service = await serviceCreateTitle(user, {
       title: parseResult.data.title,
       desc: parseResult.data.desc,
       description: parseResult.data.description,
       proposal_url: publicUrlFromKey(uploadProposalKey),
       photo_url: publicUrlFromKey(uploadPhotoKey),
-      period: config.current_period,
     });
 
     if (service.success === undefined) {

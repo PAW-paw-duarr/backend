@@ -71,15 +71,22 @@ export async function serviceGetTitleByID(
 // POST /titles
 export async function serviceCreateTitle(
   currentUser: UserClass,
-  payload: Omit<TitleClass, "id">,
+  payload: Omit<TitleClass, "id" | "period">,
 ): retService<components["schemas"]["data-title"]> {
+  const config = await ConfigModel.getConfig();
+
   // check if current user is team leader
   const userTeam = await TeamModel.findById(currentUser.team?._id.toString());
   if (currentUser.email !== userTeam?.leader_email) {
     return { error: httpUnauthorizedError, data: "Only team leader can create title" };
   }
 
-  const data = await TitleModel.create(payload);
+  // check if the team already has a title
+  if (userTeam?.title) {
+    return { error: httpBadRequestError, data: "Team already has a title" };
+  }
+
+  const data = await TitleModel.create({ period: config.current_period, ...payload });
   const title: components["schemas"]["data-title"] = {
     id: data.id,
     title: data.title,
@@ -88,6 +95,11 @@ export async function serviceCreateTitle(
     photo_url: data.photo_url,
     proposal_url: data.proposal_url,
   };
+
+  // assign the title to the team
+  userTeam.title = data._id;
+  await userTeam.save();
+
   return { success: 201, data: title };
 }
 
