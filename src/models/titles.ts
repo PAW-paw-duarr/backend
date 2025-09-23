@@ -1,4 +1,4 @@
-import { getModelForClass, modelOptions, prop, type ReturnModelType } from "@typegoose/typegoose";
+import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
 
 @modelOptions({ schemaOptions: { collection: "titles" } })
 export class TitleClass {
@@ -19,12 +19,8 @@ export class TitleClass {
   @prop({ required: true, type: String })
   public title!: string;
 
-  public static async getAllData(this: ReturnModelType<typeof TitleClass>) {
-    return this.find(
-      {},
-      { id: 1, desc: 1, description: 1, photo_url: 1, proposal_url: 1, title: 1 },
-    );
-  }
+  @prop({ required: true, type: Number })
+  public period!: number;
 }
 
 export const TitleModel = getModelForClass(TitleClass);

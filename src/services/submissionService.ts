@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
 import { SubmissionModel } from "~/models/submissions.js";
-import type { retService } from "~/types/service.js";
+import { TeamModel } from "~/models/teams.js";
 import type { UserClass } from "~/models/users.js";
+import type { retService } from "~/types/service.js";
 import {
   httpBadRequestError,
   httpInternalServerError,
   httpNotFoundError,
   httpUnauthorizedError,
 } from "~/utils/httpError.js";
-import { TeamModel } from "~/models/teams.js";
 
 /**
  * Service for /submission: get all submissions within restrictions.
