@@ -76,10 +76,6 @@ export async function serviceFindOrCreateGoogleUser(
     return { error: httpInternalServerError };
   }
 
-  if (!userInfo.email) {
-    logger.error("Google user info does not contain an email");
-    return { error: httpInternalServerError };
-  }
   const data = await UserModel.createOrFindUsergoogle({
     name: userInfo.name,
     email: userInfo.email,
