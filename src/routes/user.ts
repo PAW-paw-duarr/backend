@@ -68,9 +68,9 @@ export const updateUserSchema = z.object({
     .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character")
     .optional(),
 });
-const uploadUpdateTitle = uploadTmp.fields([{ name: "cv_file", maxCount: 1 }]);
+const uploadCvFile = uploadTmp.fields([{ name: "cv_file", maxCount: 1 }]);
 
-router.patch("/", uploadUpdateTitle, async (req, res) => {
+router.patch("/", uploadCvFile, async (req, res) => {
   const user = res.locals.user;
   const { name, email, password } = req.body;
   const files = req.files as Record<string, Express.Multer.File[]>;
@@ -87,7 +87,7 @@ router.patch("/", uploadUpdateTitle, async (req, res) => {
     return;
   }
 
-  if (parseResult.success && user.google_id !== undefined && parseResult.data.password) {
+  if (user.google_id !== undefined && parseResult.data.password) {
     await safeUnlink(cvFile?.path);
     sendHttpError({
       res,
