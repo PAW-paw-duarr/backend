@@ -73,7 +73,6 @@ router.post("/submit", uploadGrandDesign, async (req, res) => {
     return;
   }
 
-  console.log(grandDesign?.path);
   if (!grandDesign) {
     res.status(400).json({ error: "No file uploaded" });
     return;

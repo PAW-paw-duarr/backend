@@ -19,7 +19,12 @@ import {
 export async function serviceGetAllSubmissions(
   currentUser: UserClass,
 ): retService<components["schemas"]["data-submission-short"][]> {
-  const data = await SubmissionModel.getAllDataLimited(currentUser.team?._id.toString() || "");
+  const currentTeam = await TeamModel.findById(currentUser.team?._id);
+  if (!currentTeam) {
+    return { error: httpBadRequestError, data: "User is not in a team" };
+  }
+
+  const data = await SubmissionModel.getAllDataLimited(currentTeam._id.toString());
   if (!data) {
     return { error: httpNotFoundError, data: "Submissions not found" };
   }
@@ -123,11 +128,22 @@ export async function serviceCreateASubmission(
   currentUser: UserClass,
   payload: payloadSubmission,
 ): retService<components["schemas"]["data-submission"]> {
-  const currentTeam = await TeamModel.findOne({ _id: currentUser.team?._id }, { leader_email: 1 });
-  console.log(currentUser.email);
-  console.log(currentTeam?.leader_email);
+  if (!mongoose.Types.ObjectId.isValid(payload.team_target_id)) {
+    return { error: httpBadRequestError, data: "Invalid target team ID" };
+  }
+
+  const currentTeam = await TeamModel.findById(currentUser.team?._id);
+
+  if (!currentTeam) {
+    return { error: httpBadRequestError, data: "User is not in a team" };
+  }
+
   if (currentUser.email !== currentTeam?.leader_email) {
-    return { error: httpUnauthorizedError, data: "Only team leader can submit" };
+    return { error: httpUnauthorizedError, data: "Only team leader can create submissions" };
+  }
+
+  if (currentTeam.id === payload.team_target_id) {
+    return { error: httpBadRequestError, data: "Cannot submit to your own team" };
   }
 
   const existingSubmission = await SubmissionModel.findOne({ team: currentUser.team?._id });
@@ -138,8 +154,13 @@ export async function serviceCreateASubmission(
     };
   }
 
+  const targetTeam = await TeamModel.findById(payload.team_target_id);
+  if (!targetTeam) {
+    return { error: httpNotFoundError, data: "Target team not found" };
+  }
+
   const data = await SubmissionModel.createNewSubmission(
-    currentUser.team?._id.toString() || "",
+    currentTeam._id.toString(),
     payload.team_target_id,
     payload.grand_design_url,
   );

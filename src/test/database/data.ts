@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import type { ConfigClass } from "~/models/config.js";
+import type { SubmissionsClass } from "~/models/submissions.js";
 import type { TeamsClass } from "~/models/teams.js";
 import type { TitleClass } from "~/models/titles.js";
 import type { UserClass } from "~/models/users.js";
@@ -10,6 +11,9 @@ type titleData = Omit<TitleClass, "id"> & {
 };
 type userData = Omit<UserClass, "id"> & { _id?: mongoose.Types.ObjectId };
 type teamsData = Omit<TeamsClass, "id"> & { _id?: mongoose.Types.ObjectId };
+type submissionData = Omit<SubmissionsClass, "id"> & {
+  _id?: mongoose.Types.ObjectId;
+};
 
 // Config data
 export const configData: Omit<ConfigClass, "id"> = {
@@ -103,4 +107,40 @@ export const teamsData: Record<string, teamsData> = {
     period: configData.current_period,
     code: "bbb",
   },
+};
+
+export const submissionData: Record<string, submissionData> = {
+  submissionFromTeamA: {
+    _id: new mongoose.Types.ObjectId("68cd31179097773ac24c2c1a"),
+    team: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7a"), // teamWithTitleCurrentPeriod
+    team_target: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7d"), // teamWithoutTitle
+    grand_design_url: "https://example.com/submissions/design1.pdf",
+    accepted: true,
+  },
+  submissionFromTeamB: {
+    _id: new mongoose.Types.ObjectId("68cd31179097773ac24c2c1b"),
+    team: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7d"), // teamWithoutTitle
+    team_target: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7a"), // teamWithTitleCurrentPeriod
+    grand_design_url: "https://example.com/submissions/design2.pdf",
+    accepted: true,
+  },
+  submissionAccepted: {
+    _id: new mongoose.Types.ObjectId("68cd31179097773ac24c2c1c"),
+    team: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7a"), // teamWithTitleCurrentPeriod
+    team_target: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7b"), // teamWithTitlePreviousPeriod
+    grand_design_url: "https://example.com/submissions/design3.pdf",
+    accepted: true,
+  },
+  submissionRejected: {
+    _id: new mongoose.Types.ObjectId("68cd31179097773ac24c2c1d"),
+    team: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7b"), // teamWithTitlePreviousPeriod
+    team_target: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7a"), // teamWithTitleCurrentPeriod
+    grand_design_url: "https://example.com/submissions/design4.pdf",
+    accepted: false,
+  },
+};
+
+export const createSubmissionPayload = {
+  team_target_id: "68cd31179097773ac24c2b7d",
+  grand_design_url: "https://example.com/submissions/new-design.pdf",
 };
