@@ -38,7 +38,7 @@ export async function serviceUpdateUser(
   currentUser: UserClass,
   payload: serviceUpdateUserPayload,
 ): retService<components["schemas"]["data-user"]> {
-  const data = await UserModel.findByIdAndUpdate(currentUser.id, payload);
+  const data = await UserModel.findByIdAndUpdate(currentUser.id, payload, { new: true });
   if (!data) {
     return { error: httpNotFoundError, data: "User not found" };
   }
