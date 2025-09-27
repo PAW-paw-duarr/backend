@@ -1,13 +1,20 @@
 import express from "express";
 import z from "zod";
 import {
+  serviceAdminCreateTeams,
   serviceAdminGetAllTeams,
   serviceAdminGetTeamById,
   serviceGetTeamById,
   serviceJoinTeam,
   serviceKickMemberTeam,
 } from "~/services/teamService.js";
-import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpError.js";
+import { CategoryCapstone } from "~/utils/constants.js";
+import {
+  httpBadRequestError,
+  httpInternalServerError,
+  httpUnauthorizedError,
+  sendHttpError,
+} from "~/utils/httpError.js";
 
 const router = express.Router();
 
@@ -90,7 +97,7 @@ router.delete("/kick", async (req, res) => {
   const user = res.locals.user;
 
   try {
-    const service = await serviceKickMemberTeam(user_id, user);
+    const service = await serviceKickMemberTeam(parseResult.data.user_id, user);
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
@@ -98,6 +105,48 @@ router.delete("/kick", async (req, res) => {
 
     res.status(service.success);
     return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
+    return;
+  }
+});
+
+const newPeriodSchema = z.object({
+  team_data: z.array(
+    z.object({
+      name: z.string(),
+      leader_email: z.email(),
+      category: z.enum(CategoryCapstone),
+    }),
+  ),
+  new_period: z.boolean().optional(),
+});
+router.post("/new", async (req, res) => {
+  const { team_data, new_period } = req.body;
+  const currentUser = res.locals.user;
+
+  if (!currentUser.is_admin) {
+    sendHttpError({
+      res,
+      error: httpUnauthorizedError,
+      message: "Admin privilege required",
+    });
+    return;
+  }
+
+  const parseResult = newPeriodSchema.safeParse({ team_data, new_period });
+  if (!parseResult.success) {
+    sendHttpError({ res, error: httpBadRequestError, detail: z.treeifyError(parseResult.error) });
+    return;
+  }
+
+  try {
+    const service = await serviceAdminCreateTeams(
+      parseResult.data.team_data,
+      parseResult.data.new_period,
+    );
+
+    res.status(service.success).json(service.data);
   } catch {
     sendHttpError({ res, error: httpInternalServerError });
     return;

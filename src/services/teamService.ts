@@ -1,5 +1,7 @@
+import nodeCrypto from "node:crypto";
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
+import { ConfigModel } from "~/models/config.js";
 import { TeamModel } from "~/models/teams.js";
 import { type UserClass, UserModel } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
@@ -139,4 +141,87 @@ export async function serviceAdminGetTeamById(
     code: data.code,
   };
   return { success: 200, data: team };
+}
+
+interface retServiceCreateTeams {
+  success_count: number;
+  error_count: number;
+  data?: components["schemas"]["data-team"][];
+  error_data?: Array<{
+    name: string;
+    leader_email: string;
+    error: string;
+    category: components["schemas"]["data-team-new"]["category"];
+  }>;
+}
+export async function serviceAdminCreateTeams(
+  teamData: components["schemas"]["data-team-new"][],
+  new_period?: boolean,
+): Promise<{
+  success: number;
+  data: retServiceCreateTeams;
+}> {
+  let period: number;
+  if (new_period) {
+    const config = await ConfigModel.getConfig();
+    period = config.current_period + 1;
+    await ConfigModel.updateOne({ current_period: period });
+  } else {
+    const config = await ConfigModel.getConfig();
+    period = config.current_period;
+  }
+
+  const successfulTeams: components["schemas"]["data-team"][] = [];
+  const errorData: Array<{
+    name: string;
+    leader_email: string;
+    category: components["schemas"]["data-team-new"]["category"];
+    error: string;
+  }> = [];
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (const team of teamData) {
+    try {
+      const teamToCreate = {
+        name: team.name,
+        leader_email: team.leader_email,
+        category: team.category,
+        period: period,
+        code: nodeCrypto.randomUUID().replace(/-/g, "").slice(0, 10),
+      };
+
+      const insertedTeam = await TeamModel.create(teamToCreate);
+
+      const formattedTeam: components["schemas"]["data-team"] = {
+        id: insertedTeam.id,
+        name: insertedTeam.name,
+        leader_email: insertedTeam.leader_email,
+        category: insertedTeam.category,
+        title_id: insertedTeam.title ? insertedTeam.title._id.toString() : undefined,
+        period: insertedTeam.period,
+        code: insertedTeam.code,
+      };
+
+      successfulTeams.push(formattedTeam);
+      successCount++;
+    } catch (error) {
+      errorData.push({
+        name: team.name,
+        leader_email: team.leader_email,
+        category: team.category,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+      });
+      errorCount++;
+    }
+  }
+
+  const returnData: retServiceCreateTeams = {
+    success_count: successCount,
+    error_count: errorCount,
+    ...(successfulTeams.length > 0 && { data: successfulTeams }),
+    ...(errorData.length > 0 && { error_data: errorData }),
+  };
+
+  return { success: 201, data: returnData };
 }

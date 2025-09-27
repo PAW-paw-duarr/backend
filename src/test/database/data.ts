@@ -94,6 +94,14 @@ export const userData: Record<string, userData> = {
     cv_url: "https://example.com/cvs/noteam.pdf",
     is_admin: false,
   },
+  userWithoutTeam2: {
+    _id: new mongoose.Types.ObjectId("68cd3817d7b90ccdc43ef6aa"),
+    name: "No Team User 2",
+    email: "noteam2@mail.com",
+    password: "noteam123",
+    cv_url: "https://example.com/cvs/noteam2.pdf",
+    is_admin: false,
+  },
 };
 
 export const teamsData: Record<string, teamsData> = {
@@ -160,6 +168,19 @@ export const createSubmissionPayload = {
   team_target_id: "68cd31179097773ac24c2b7d",
   grand_design_url: "https://example.com/submissions/new-design.pdf",
 };
+
+export const createTeamPayload = [
+  {
+    name: "Test Team Creation",
+    leader_email: "noteam@mail.com",
+    category: CategoryCapstone.Kesehatan,
+  },
+  {
+    name: "Test Team Creation 2",
+    leader_email: "noteam2@mail.com",
+    category: CategoryCapstone.SmartCity,
+  },
+];
 
 export const updateUserPayload = {
   name: "Updated Name",

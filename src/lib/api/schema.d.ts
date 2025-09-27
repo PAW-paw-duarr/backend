@@ -390,25 +390,20 @@ export interface components {
       name?: string;
       leader_email?: string;
       title_id?: string;
-      /** @enum {string} */
-      category?:
-        | "Kesehatan"
-        | "Pengelolaan Sampah"
-        | "Smart City"
-        | "Transportasi Ramah Lingkungan";
+      category?: components["schemas"]["CategoryCapstone"];
       period?: number;
       code?: string;
     };
     "data-team-short": {
       id?: string;
       name?: string;
-      /** @enum {string} */
-      category?:
-        | "Kesehatan"
-        | "Pengelolaan Sampah"
-        | "Smart City"
-        | "Transportasi Ramah Lingkungan";
+      category?: components["schemas"]["CategoryCapstone"];
       period?: number;
+    };
+    "data-team-new": {
+      name: string;
+      leader_email: string;
+      category: components["schemas"]["CategoryCapstone"];
     };
     "data-user": {
       id?: string;
@@ -460,6 +455,12 @@ export interface components {
         [key: string]: unknown;
       };
     };
+    /** @enum {string} */
+    CategoryCapstone:
+      | "Kesehatan"
+      | "Pengelolaan Sampah"
+      | "Smart City"
+      | "Transportasi Ramah Lingkungan";
   };
   responses: never;
   parameters: never;
@@ -877,7 +878,8 @@ export interface operations {
     requestBody?: {
       content: {
         "application/json": {
-          period: string;
+          new_perios?: boolean;
+          team_data: components["schemas"]["data-team-new"][];
         };
       };
     };
@@ -888,9 +890,40 @@ export interface operations {
         };
         content: {
           "application/json": {
-            id?: string;
-            code?: string;
-          }[];
+            success_count: number;
+            error_count: number;
+            data: components["schemas"]["data-team"][];
+            error_data: {
+              name: string;
+              leader_email: string;
+              category: components["schemas"]["CategoryCapstone"];
+              error: string;
+            }[];
+          };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };

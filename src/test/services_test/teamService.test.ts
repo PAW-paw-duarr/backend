@@ -5,13 +5,15 @@ import { TeamModel } from "~/models/teams.js";
 import { TitleModel } from "~/models/titles.js";
 import { UserModel } from "~/models/users.js";
 import {
+  serviceAdminCreateTeams,
   serviceAdminDeleteTeamById,
   serviceAdminGetAllTeams,
   serviceAdminGetTeamById,
   serviceGetTeamById,
   serviceJoinTeam,
 } from "~/services/teamService.js";
-import { configData, teamsData, titleData, userData } from "../database/data.js";
+import { CategoryCapstone } from "~/utils/constants.js";
+import { configData, createTeamPayload, teamsData, titleData, userData } from "../database/data.js";
 import { clearDatabase } from "../database/helper.js";
 
 describe("TeamService", () => {
@@ -89,7 +91,6 @@ describe("TeamService", () => {
       assert(result.success === 200);
       expect(result.data.id).toBe(teamsData.teamWithoutTitle._id!.toString());
 
-      // Verify user was updated with team reference
       const updatedUser = await UserModel.findById(user!._id);
       expect(updatedUser!.team!.toString()).toBe(teamsData.teamWithoutTitle._id!.toString());
     });
@@ -220,7 +221,6 @@ describe("TeamService", () => {
 
       expect(result.success).toBe(204);
 
-      // Verify team was actually deleted
       const deletedTeam = await TeamModel.findById(teamId);
       expect(deletedTeam).toBeNull();
     });
@@ -248,6 +248,99 @@ describe("TeamService", () => {
 
       const remainingTeam = await TeamModel.findById(teamToKeep);
       expect(remainingTeam).toBeDefined();
+    });
+  });
+
+  describe("serviceAdminCreateTeams", () => {
+    it("should create teams successfully with valid payload", async () => {
+      const result = await serviceAdminCreateTeams(createTeamPayload);
+
+      expect(result.success).toBe(201);
+      assert(result.success === 201);
+      expect(result.data).toBeDefined();
+      expect(result.data!.success_count).toBe(2);
+      expect(result.data!.error_count).toBe(0);
+      expect(result.data!.data).toBeDefined();
+      expect(result.data!.data).toHaveLength(2);
+      expect(result.data!.error_data).toBeUndefined();
+
+      const firstTeam = result.data!.data![0];
+      expect(firstTeam.name).toBe(createTeamPayload[0].name);
+      expect(firstTeam.leader_email).toBe(createTeamPayload[0].leader_email);
+      expect(firstTeam.category).toBe(createTeamPayload[0].category);
+      expect(firstTeam.code).toBeDefined();
+      expect(firstTeam.period).toBe(configData.current_period);
+
+      const createdTeam1 = await TeamModel.findById(firstTeam.id);
+      expect(createdTeam1).toBeDefined();
+      expect(createdTeam1!.name).toBe(createTeamPayload[0].name);
+
+      const createdTeam2 = await TeamModel.findById(result.data!.data![1].id);
+      expect(createdTeam2).toBeDefined();
+      expect(createdTeam2!.name).toBe(createTeamPayload[1].name);
+    });
+
+    it("should create teams with new period when new_period is true", async () => {
+      const result = await serviceAdminCreateTeams(createTeamPayload, true);
+
+      expect(result.success).toBe(201);
+      assert(result.success === 201);
+      expect(result.data!.success_count).toBe(2);
+      expect(result.data!.data![0].period).toBe(configData.current_period + 1);
+
+      const updatedConfig = await ConfigModel.findOne({ config_id: 1 });
+      expect(updatedConfig!.current_period).toBe(configData.current_period + 1);
+    });
+
+    it("should use current period when new_period is false or undefined", async () => {
+      const result = await serviceAdminCreateTeams(createTeamPayload, false);
+
+      expect(result.success).toBe(201);
+      assert(result.success === 201);
+      expect(result.data!.data![0].period).toBe(configData.current_period);
+
+      const config = await ConfigModel.findOne({ config_id: 1 });
+      expect(config!.current_period).toBe(configData.current_period);
+    });
+
+    it("should handle duplicate team names gracefully", async () => {
+      await TeamModel.create({
+        name: "Duplicate Team",
+        leader_email: userData.teamLeaderWithTitle.email,
+        category: CategoryCapstone.Kesehatan,
+        period: configData.current_period,
+        code: "DUPLICATE123",
+      });
+
+      const duplicatePayload = [
+        {
+          name: "Duplicate Team",
+          leader_email: userData.userWithoutTeam.email,
+          category: CategoryCapstone.Kesehatan,
+        },
+        {
+          name: "Unique Team",
+          leader_email: userData.adminUser.email,
+          category: CategoryCapstone.SmartCity,
+        },
+      ];
+
+      const result = await serviceAdminCreateTeams(duplicatePayload);
+
+      expect(result.success).toBe(201);
+      assert(result.success === 201);
+      expect(result.data!.success_count + result.data!.error_count).toBe(2);
+    });
+
+    it("should handle empty payload array", async () => {
+      const result = await serviceAdminCreateTeams([]);
+
+      expect(result.success).toBe(201);
+      assert(result.success === 201);
+      expect(result.data!.success_count).toBe(0);
+      expect(result.data!.error_count).toBe(0);
+      expect(result.data!.data).toBeUndefined();
+      expect(result.data!.error_data).toBeUndefined();
     });
   });
 });
