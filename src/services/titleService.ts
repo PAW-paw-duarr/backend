@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
+import { deleteS3Keys, extractS3KeyFromUrl } from "~/lib/s3.js";
 import { ConfigModel } from "~/models/config.js";
 import { SubmissionModel } from "~/models/submissions.js";
 import { TeamModel } from "~/models/teams.js";
@@ -47,8 +48,8 @@ export async function serviceGetTitleByID(
   // check if the user is owner of the title or has an accepted submission to it
   const titleOwnerTeam = await TeamModel.findOne({ title: data.id });
   const acceptedSubmission = await SubmissionModel.findOne({
-    team: currentUser.team?._id.toString(),
-    title: data.id,
+    team: currentUser.team?._id,
+    team_target: titleOwnerTeam?._id,
     accepted: true,
   });
   const allowGetProposal = !!(
@@ -71,15 +72,20 @@ export async function serviceGetTitleByID(
 // POST /titles
 export async function serviceCreateTitle(
   currentUser: UserClass,
-  payload: Omit<TitleClass, "id">,
+  payload: Omit<TitleClass, "id" | "period">,
 ): retService<components["schemas"]["data-title"]> {
   // check if current user is team leader
-  const userTeam = await TeamModel.findById(currentUser.team?._id.toString());
-  if (currentUser.email !== userTeam?.leader_email) {
+  const currentTeam = await TeamModel.findById(currentUser.team?._id.toString());
+  if (currentUser.email !== currentTeam?.leader_email) {
     return { error: httpUnauthorizedError, data: "Only team leader can create title" };
   }
 
-  const data = await TitleModel.create(payload);
+  // check if the team already has a title
+  if (currentTeam?.title) {
+    return { error: httpBadRequestError, data: "Team already has a title" };
+  }
+
+  const data = await TitleModel.create({ period: currentTeam.period, ...payload });
   const title: components["schemas"]["data-title"] = {
     id: data.id,
     title: data.title,
@@ -88,44 +94,46 @@ export async function serviceCreateTitle(
     photo_url: data.photo_url,
     proposal_url: data.proposal_url,
   };
+
+  // assign the title to the team
+  currentTeam.title = data._id;
+  await currentTeam.save();
+
   return { success: 201, data: title };
 }
 
 // PATCH /titles/:id
 export async function serviceUpdateTitle(
-  id: string,
   currentUser: UserClass,
   payload: Partial<Omit<TitleClass, "id">>,
 ): retService<components["schemas"]["data-title"]> {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return { error: httpBadRequestError, data: "Invalid title ID" };
+  const currentTeam = await TeamModel.findById(currentUser.team?._id.toString());
+  if (!currentTeam?.title) {
+    return { error: httpBadRequestError, data: "Your team does not have a title to update" };
+  }
+  if (currentUser.email !== currentTeam.leader_email) {
+    return { error: httpUnauthorizedError, data: "Only team leader can update title" };
   }
 
-  const data = await TitleModel.findById(id);
+  const titleId = currentTeam.title._id.toString();
+  const data = await TitleModel.findById(titleId);
   if (!data) {
     return { error: httpNotFoundError, data: "Title not found" };
   }
 
-  // check if current user is team leader and the owner of the title
-  const titleOwnerTeam = await TeamModel.findOne({ title: data.id });
-  if (titleOwnerTeam?.leader_email !== currentUser.email) {
-    return {
-      error: httpUnauthorizedError,
-      data: "Only team leader and owner of the title can update title",
-    };
-  }
-
   //check if has already submission to this title
-  const hasSubmission = await SubmissionModel.exists({
-    title: data.id,
+  const hasSubmission = await SubmissionModel.findOne({
+    team_target: currentTeam._id,
   });
   if (hasSubmission) {
     return { error: httpBadRequestError, data: "Cannot update title after submission" };
   }
 
-  // update the title
-  await TitleModel.updateOne({ id }, payload);
-  const updatedData = await TitleModel.findById(id);
+  // update the title and get the updated document
+  const updatedData = await TitleModel.findByIdAndUpdate(titleId, payload, {
+    new: true,
+    runValidators: true,
+  });
   if (!updatedData) {
     return { error: httpNotFoundError, data: "Title not found after update" };
   }
@@ -153,8 +161,24 @@ export async function serviceAdminDeleteTitleByID(title_id: string): retService<
     return { error: httpNotFoundError, data: "Title not found" };
   }
 
-  await SubmissionModel.deleteMany({ title: title_id });
-  await TeamModel.updateMany({ title: title_id }, { title: null });
+  if (data.proposal_url) {
+    await deleteS3Keys(extractS3KeyFromUrl(data.proposal_url) || "");
+  }
+
+  if (data.photo_url) {
+    await deleteS3Keys(extractS3KeyFromUrl(data.photo_url) || "");
+  }
+
+  for (const submission of await SubmissionModel.find({ title: title_id })) {
+    await TeamModel.updateOne({ _id: submission.team }, { $pull: { submissions: submission._id } });
+    await SubmissionModel.findByIdAndDelete(submission._id);
+    if (submission.grand_design_url) {
+      await deleteS3Keys(extractS3KeyFromUrl(submission.grand_design_url) || "");
+    }
+  }
+
+  // remove the title from the team
+  await TeamModel.updateMany({ title: title_id }, { $unset: { title: "" } });
 
   return { success: 204 };
 }
@@ -164,7 +188,7 @@ export async function serviceAdminGetTitleByID(
   id: string,
 ): retService<components["schemas"]["data-title"]> {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return { error: httpBadRequestError, data: "Invalid Title ID" };
+    return { error: httpBadRequestError, data: "Invalid title ID" };
   }
 
   const data = await TitleModel.findById(id);

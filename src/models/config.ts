@@ -13,7 +13,7 @@ export class ConfigClass {
   public static async getConfig(this: ReturnModelType<typeof ConfigModel>) {
     const existingConfig = await this.findOne({ config_id: 1 });
     if (!existingConfig) {
-      const newConfig = new this({ config_id: 1, current_period: 1 });
+      const newConfig = new this({ config_id: 1, current_period: 0 });
       await newConfig.save();
       return newConfig;
     }

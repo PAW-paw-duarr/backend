@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
+import { deleteS3Keys, extractS3KeyFromUrl } from "~/lib/s3.js";
 import { type UserClass, UserModel } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
 import { httpBadRequestError, httpNotFoundError } from "~/utils/httpError.js";
@@ -38,7 +39,15 @@ export async function serviceUpdateUser(
   currentUser: UserClass,
   payload: serviceUpdateUserPayload,
 ): retService<components["schemas"]["data-user"]> {
-  const data = await UserModel.findByIdAndUpdate(currentUser.id, payload);
+  if (currentUser.google_id) {
+    delete payload.email;
+    delete payload.password;
+  }
+
+  const data = await UserModel.findByIdAndUpdate(currentUser.id, payload, {
+    new: true,
+    runValidators: true,
+  });
   if (!data) {
     return { error: httpNotFoundError, data: "User not found" };
   }
@@ -67,7 +76,11 @@ export async function serviceDeleteUserById(user_id: string): retService<undefin
     return { error: httpNotFoundError, data: "User not found" };
   }
 
-  await UserModel.deleteOne({ _id: user_id });
+  await data.deleteOne();
+
+  if (data.cv_url) {
+    await deleteS3Keys(extractS3KeyFromUrl(data.cv_url) || "");
+  }
 
   return { success: 204 };
 }

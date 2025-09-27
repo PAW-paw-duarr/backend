@@ -73,7 +73,6 @@ router.post("/submit", uploadGrandDesign, async (req, res) => {
     return;
   }
 
-  console.log(grandDesign?.path);
   if (!grandDesign) {
     res.status(400).json({ error: "No file uploaded" });
     return;
@@ -99,7 +98,7 @@ router.post("/submit", uploadGrandDesign, async (req, res) => {
     await safeUnlink(grandDesign.path);
 
     const service = await serviceCreateASubmission(user, {
-      team_target_id,
+      team_target_id: parseReqBody.data.team_target_id,
       grand_design_url: publicUrlFromKey(uploadedGrandDesignKey),
     });
 
@@ -131,7 +130,11 @@ router.post("/response", async (req, res) => {
 
   const user = res.locals.user;
   try {
-    const service = await serviceResponseSubmission(id, user, accept);
+    const service = await serviceResponseSubmission(
+      parseReqBody.data.id,
+      user,
+      parseReqBody.data.accept,
+    );
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
@@ -152,7 +155,7 @@ router.delete("/:id", async (req, res) => {
     sendHttpError({
       res,
       error: httpBadRequestError,
-      message: "Only ADMIN can delete submissions",
+      message: "Unauthorized",
     });
     return;
   }

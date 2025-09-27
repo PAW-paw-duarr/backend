@@ -15,7 +15,10 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"suspicious": {
+				"noConsole": "warn"
+			}
 		}
 	},
 	"javascript": {
@@ -43,6 +46,16 @@
 				"rules": {
 					"complexity": {
 						"noThisInStatic": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/test/**/*.ts"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
 					}
 				}
 			}

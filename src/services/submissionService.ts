@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
+import { deleteS3Keys, extractS3KeyFromUrl } from "~/lib/s3.js";
 import { SubmissionModel } from "~/models/submissions.js";
 import { TeamModel } from "~/models/teams.js";
 import type { UserClass } from "~/models/users.js";
@@ -11,15 +12,15 @@ import {
   httpUnauthorizedError,
 } from "~/utils/httpError.js";
 
-/**
- * Service for GET `/submission`: get all submissions within restrictions.
- * @param {UserClass} currentUser Current user information.
- * @returns {retService<components["schemas"]["data-submission-short"][]>}
- */
 export async function serviceGetAllSubmissions(
   currentUser: UserClass,
 ): retService<components["schemas"]["data-submission-short"][]> {
-  const data = await SubmissionModel.getAllDataLimited(currentUser.team?._id.toString() || "");
+  const currentTeam = await TeamModel.findById(currentUser.team?._id);
+  if (!currentTeam) {
+    return { error: httpBadRequestError, data: "User is not in a team" };
+  }
+
+  const data = await SubmissionModel.getAllDataLimited(currentTeam._id.toString());
   if (!data) {
     return { error: httpNotFoundError, data: "Submissions not found" };
   }
@@ -35,12 +36,6 @@ export async function serviceGetAllSubmissions(
   return { success: 200, data: submissions };
 }
 
-/**
- * Service for GET `/submission/{id}`: find the matching submission by ID within restrictions.
- * @param {string} id The searched submission ID.
- * @param {UserClass} currentUser Current user information.
- * @returns {retService<components["schemas"]["data-submission"]>}
- */
 export async function serviceGetSubmissionById(
   id: string,
   currentUser: UserClass,
@@ -49,7 +44,12 @@ export async function serviceGetSubmissionById(
     return { error: httpBadRequestError, data: "Invalid submission ID" };
   }
 
-  const data = await SubmissionModel.findByIdLimited(id, currentUser.team?._id.toString() || "");
+  const currentTeam = await TeamModel.findById(currentUser.team?._id);
+  if (!currentTeam) {
+    return { error: httpBadRequestError, data: "User is not in a team" };
+  }
+
+  const data = await SubmissionModel.findByIdLimited(id, currentTeam._id.toString());
   if (!data) {
     return { error: httpNotFoundError, data: "Submission not found" };
   }
@@ -59,19 +59,12 @@ export async function serviceGetSubmissionById(
     team_id: data.team._id.toString(),
     grand_design_url: data.grand_design_url,
     team_target_id: data.team_target._id.toString(),
-    accepted: data.accepted ?? false,
+    accepted: data.accepted,
   };
 
   return { success: 200, data: submissionData };
 }
 
-/**
- * Service for POST `/submission/response`: the owner team's response to the inherited submission (accept/decline).
- * @param {string} id The submission ID to respond to.
- * @param {UserClass} currentUser Current user information.
- * @param {boolean} accept Accept/decline the submission.
- * @returns {retService<components["schemas"]["data-submission"]>}
- */
 export async function serviceResponseSubmission(
   id: string,
   currentUser: UserClass,
@@ -113,24 +106,37 @@ type payloadSubmission = {
   team_target_id: string;
   grand_design_url: string;
 };
-/**
- * Service for POST `/submission/submit`: submit a multipart/form-data information and create a new document based on the payload.
- * @param {UserClass} currentUser Current user information.
- * @param {payloadSubmission} payload Request body payload.
- * @returns {retService<components["schemas"]["data-submission"]>}
- */
 export async function serviceCreateASubmission(
   currentUser: UserClass,
   payload: payloadSubmission,
 ): retService<components["schemas"]["data-submission"]> {
-  const currentTeam = await TeamModel.findOne({ _id: currentUser.team?._id }, { leader_email: 1 });
-  console.log(currentUser.email);
-  console.log(currentTeam?.leader_email);
-  if (currentUser.email !== currentTeam?.leader_email) {
-    return { error: httpUnauthorizedError, data: "Only team leader can submit" };
+  if (!mongoose.Types.ObjectId.isValid(payload.team_target_id)) {
+    return { error: httpBadRequestError, data: "Invalid target team ID" };
   }
 
-  const existingSubmission = await SubmissionModel.findOne({ team: currentUser.team?._id });
+  const currentTeam = await TeamModel.findById(currentUser.team?._id);
+
+  if (!currentTeam) {
+    return { error: httpBadRequestError, data: "User is not in a team" };
+  }
+
+  if (currentUser.email !== currentTeam?.leader_email) {
+    return { error: httpUnauthorizedError, data: "Only team leader can create submissions" };
+  }
+
+  if (currentTeam.id === payload.team_target_id) {
+    return { error: httpBadRequestError, data: "Cannot submit to your own team" };
+  }
+
+  const targetTeam = await TeamModel.findById(payload.team_target_id);
+  if (!targetTeam) {
+    return { error: httpNotFoundError, data: "Target team not found" };
+  }
+
+  const existingSubmission = await SubmissionModel.findOne({
+    team: currentUser.team?._id,
+    team_target: payload.team_target_id,
+  });
   if (existingSubmission) {
     return {
       error: httpBadRequestError,
@@ -139,7 +145,7 @@ export async function serviceCreateASubmission(
   }
 
   const data = await SubmissionModel.createNewSubmission(
-    currentUser.team?._id.toString() || "",
+    currentTeam._id.toString(),
     payload.team_target_id,
     payload.grand_design_url,
   );
@@ -158,16 +164,12 @@ export async function serviceCreateASubmission(
   return { success: 201, data: submission };
 }
 
-// ===== ADMIN SERVICES =====
+// admin services
 
-/**
- * Service for GET `/submission`: get all submissions — **ADMIN ONLY**.
- * @returns {retService<components["schemas"]["data-submission-short"][]>}
- */
 export async function serviceAdminGetAllSubmissions(): retService<
   components["schemas"]["data-submission-short"][]
 > {
-  const data = await SubmissionModel.getAllData();
+  const data = await SubmissionModel.find();
   if (!data) {
     return { error: httpNotFoundError, data: "Submissions not found" };
   }
@@ -183,11 +185,6 @@ export async function serviceAdminGetAllSubmissions(): retService<
   return { success: 200, data: submissions };
 }
 
-/**
- * Service for GET `/submission/{id}`: find the matching submission by ID — **ADMIN ONLY**.
- * @param {string} id The searched submission ID.
- * @returns {retService<components["schemas"]["data-submission"]>}
- */
 export async function serviceAdminGetSubmissionById(
   id: string,
 ): retService<components["schemas"]["data-submission"]> {
@@ -205,25 +202,24 @@ export async function serviceAdminGetSubmissionById(
     team_id: data.team._id.toString(),
     grand_design_url: data.grand_design_url,
     team_target_id: data.team_target._id.toString(),
-    accepted: data.accepted ?? false,
+    accepted: data.accepted,
   };
 
   return { success: 200, data: submissionData };
 }
 
-/**
- * Service for DELETE `/submission/{id}`: remove a submission by ID without restrictions — **ADMIN ONLY**.
- * @param {string} id The submission ID to be deleted.
- * @returns {retService<undefined>}
- */
 export async function serviceAdminDeleteSubmissionById(id: string): retService<undefined> {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return { error: httpBadRequestError, data: "Invalid submission ID" };
   }
 
-  const data = await SubmissionModel.deleteById(id);
+  const data = await SubmissionModel.findByIdAndDelete(id);
   if (!data) {
     return { error: httpNotFoundError, data: "Submission not found" };
+  }
+
+  if (data.grand_design_url) {
+    await deleteS3Keys(extractS3KeyFromUrl(data.grand_design_url) || "");
   }
 
   return { success: 204 };

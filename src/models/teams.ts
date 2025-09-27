@@ -1,10 +1,4 @@
-import {
-  getModelForClass,
-  modelOptions,
-  prop,
-  type Ref,
-  type ReturnModelType,
-} from "@typegoose/typegoose";
+import { getModelForClass, modelOptions, prop, type Ref } from "@typegoose/typegoose";
 import { CategoryCapstone } from "~/utils/constants.js";
 import { TitleClass } from "./titles.js";
 
@@ -29,10 +23,6 @@ export class TeamsClass {
 
   @prop({ required: true, type: String })
   public code!: string;
-
-  public static async getAllData(this: ReturnModelType<typeof TeamsClass>) {
-    return this.find({}, { id: 1, name: 1, category: 1 });
-  }
 }
 
 export const TeamModel = getModelForClass(TeamsClass);

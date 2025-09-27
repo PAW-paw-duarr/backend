@@ -24,7 +24,10 @@ router.post("/signin/password", async (req, res) => {
   }
 
   try {
-    const resp = await serviceSigninPassword({ email, password });
+    const resp = await serviceSigninPassword({
+      email: parseResult.data.email,
+      password: parseResult.data.password,
+    });
 
     if (resp.success === undefined) {
       sendHttpError({ res, error: resp.error, message: resp.data });
@@ -59,7 +62,11 @@ router.post("/signup/password", async (req, res) => {
   }
 
   try {
-    const resp = await serviceSignupPassword({ email, password, name });
+    const resp = await serviceSignupPassword({
+      email: parseResult.data.email,
+      password: parseResult.data.password,
+      name: parseResult.data.name,
+    });
 
     if (resp.success === undefined) {
       sendHttpError({ res, error: resp.error, message: resp.data });

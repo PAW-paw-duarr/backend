@@ -1,5 +1,10 @@
 import fs from "node:fs";
-import { DeleteObjectsCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import env from "~/utils/env.js";
 
 export const s3 = new S3Client({
@@ -13,7 +18,7 @@ export const s3 = new S3Client({
 });
 
 export function publicUrlFromKey(key: string): string {
-  return `${env.S3_ENDPOINT}/${env.S3_BUCKET_NAME}/${key}`;
+  return `${env.DOMAIN}/file/${key}`;
 }
 
 export async function putFromDisk(localPath: string, key: string, contentType?: string) {
@@ -37,4 +42,19 @@ export async function deleteS3Keys(...keys: string[]) {
       Delete: { Objects, Quiet: true },
     }),
   );
+}
+
+export async function getS3Object(key: string) {
+  const response = await s3.send(
+    new GetObjectCommand({
+      Bucket: env.S3_BUCKET_NAME,
+      Key: key,
+    }),
+  );
+  return response;
+}
+
+export function extractS3KeyFromUrl(url: string) {
+  const match = url.match(/\/file\/(.*)$/);
+  return match ? match[1] : null;
 }
