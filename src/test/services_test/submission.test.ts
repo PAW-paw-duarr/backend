@@ -218,7 +218,7 @@ describe("SubmissionService", () => {
         _id: new mongoose.Types.ObjectId(),
         username: "userWithoutTeam",
         email: "noteam@example.com",
-        team: "68d60c2b8db55bb1adb15cbe",
+        team: new mongoose.Types.ObjectId("68d60c2b8db55bb1adb15cbe"),
       });
 
       const result = await serviceCreateASubmission(userWithoutTeam, createSubmissionPayload);

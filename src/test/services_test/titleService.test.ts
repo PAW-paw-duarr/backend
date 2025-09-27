@@ -368,7 +368,7 @@ describe("TitleService", () => {
       const result = await serviceAdminGetTitleByID("invalid-id");
 
       expect(result.error?.status).toBe(400);
-      expect(result.data).toBe("Invalid Title ID");
+      expect(result.data).toBe("Invalid title ID");
     });
 
     it("should return 404 for valid ObjectId but non-existent title", async () => {

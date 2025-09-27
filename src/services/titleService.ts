@@ -176,7 +176,7 @@ export async function serviceAdminGetTitleByID(
   id: string,
 ): retService<components["schemas"]["data-title"]> {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return { error: httpBadRequestError, data: "Invalid Title ID" };
+    return { error: httpBadRequestError, data: "Invalid title ID" };
   }
 
   const data = await TitleModel.findById(id);
