@@ -2,8 +2,8 @@ import express from "express";
 import z from "zod";
 import {
   serviceAdminCreateTeams,
+  serviceAdminDeleteTeamById,
   serviceAdminGetAllTeams,
-  serviceAdminGetTeamById,
   serviceGetTeamById,
   serviceJoinTeam,
   serviceKickMemberTeam,
@@ -19,8 +19,21 @@ import {
 const router = express.Router();
 
 router.get("/", async (_, res) => {
+  const currentUser = res.locals.user;
+
+  if (!currentUser.team && !currentUser.is_admin) {
+    sendHttpError({
+      res,
+      error: httpUnauthorizedError,
+      message: "Unauthorized",
+    });
+    return;
+  }
+
   try {
-    const service = await serviceAdminGetAllTeams();
+    const service = currentUser.is_admin
+      ? await serviceAdminGetAllTeams()
+      : await serviceGetTeamById(currentUser.team?._id.toString() || "", currentUser);
 
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
@@ -39,9 +52,7 @@ router.get("/:id", async (req, res) => {
   const currentUser = res.locals.user;
 
   try {
-    const service = currentUser.is_admin
-      ? await serviceAdminGetTeamById(id)
-      : await serviceGetTeamById(currentUser.team?._id.toString() || "");
+    const service = await serviceGetTeamById(id, currentUser);
 
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
@@ -83,27 +94,18 @@ router.post("/join", async (req, res) => {
   }
 });
 
-const deleteKickSchema = z.object({
-  user_id: z.string(),
-});
-router.delete("/kick", async (req, res) => {
-  const { user_id } = req.body;
-  const parseResult = deleteKickSchema.safeParse({ user_id });
-  if (!parseResult.success) {
-    sendHttpError({ res, error: httpBadRequestError, detail: z.treeifyError(parseResult.error) });
-    return;
-  }
-
+router.delete("/kick/:id", async (req, res) => {
   const user = res.locals.user;
+  const id = req.params.id;
 
   try {
-    const service = await serviceKickMemberTeam(parseResult.data.user_id, user);
+    const service = await serviceKickMemberTeam(id, user);
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
     }
 
-    res.status(service.success);
+    res.status(service.success).send();
     return;
   } catch {
     sendHttpError({ res, error: httpInternalServerError });
@@ -129,7 +131,7 @@ router.post("/new", async (req, res) => {
     sendHttpError({
       res,
       error: httpUnauthorizedError,
-      message: "Admin privilege required",
+      message: "Unauthorized",
     });
     return;
   }
@@ -161,20 +163,20 @@ router.delete("/:id", async (req, res) => {
     sendHttpError({
       res,
       error: httpBadRequestError,
-      message: "Admin privilege required",
+      message: "Unauthorized",
     });
     return;
   }
 
   try {
-    const service = await serviceAdminGetTeamById(title_id);
+    const service = await serviceAdminDeleteTeamById(title_id);
 
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
     }
 
-    res.status(service.success);
+    res.status(service.success).send();
     return;
   } catch {
     sendHttpError({ res, error: httpInternalServerError });

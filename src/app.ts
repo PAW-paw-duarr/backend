@@ -2,6 +2,7 @@ import express from "express";
 import { authMiddleware, sessionMiddleware } from "~/lib/auth.js";
 import { httpLogger } from "~/lib/logger.js";
 import authRouter from "~/routes/auth.js";
+import fileRouter from "~/routes/file.js";
 import indexRouter from "~/routes/index.js";
 import submissionRouter from "~/routes/submission.js";
 import teamRouter from "~/routes/team.js";
@@ -11,24 +12,35 @@ import { httpInternalServerError, httpNotFoundError, sendHttpError } from "~/uti
 
 const app = express();
 
+// Global middleware
 app.use(httpLogger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(sessionMiddleware);
 
-const apiRoute = express.Router();
-app.use("/api", apiRoute);
-apiRoute.use("/", indexRouter);
-apiRoute.use("/auth", authRouter);
+// API routes
+const apiRouter = express.Router();
 
-const protectedRoute = express.Router();
-protectedRoute.use(authMiddleware);
-protectedRoute.use("/title", titleRouter);
-protectedRoute.use("/submission", submissionRouter);
-protectedRoute.use("/team", teamRouter);
-protectedRoute.use("/user", userRouter);
+// Public API routes
+apiRouter.use("/", indexRouter);
+apiRouter.use("/auth", authRouter);
 
-apiRoute.use(protectedRoute);
+// Protected API routes
+const protectedApiRouter = express.Router();
+protectedApiRouter.use(authMiddleware);
+protectedApiRouter.use("/title", titleRouter);
+protectedApiRouter.use("/submission", submissionRouter);
+protectedApiRouter.use("/team", teamRouter);
+protectedApiRouter.use("/user", userRouter);
+
+apiRouter.use("/", protectedApiRouter);
+app.use("/api", apiRouter);
+
+// Protected file routes (non-API)
+const fileRoutes = express.Router();
+fileRoutes.use(authMiddleware);
+fileRoutes.use("/file", fileRouter);
+app.use("/", fileRoutes);
 
 // catch 404 and forward to error handler
 app.use((_, res) => {

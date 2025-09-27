@@ -60,6 +60,15 @@ export const userData: Record<string, userData> = {
     cv_url: "https://example.com/cvs/tes1.pdf",
     is_admin: false,
   },
+  teamMemberWithTitle: {
+    _id: new mongoose.Types.ObjectId("68d7c67dfb870a538f78bebb"),
+    name: "tes11",
+    email: "tes11@mail.com",
+    password: "tes11",
+    team: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7a"),
+    cv_url: "https://example.com/cvs/tes3.pdf",
+    is_admin: false,
+  },
   teamLeaderWithoutTitle: {
     _id: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7c"),
     name: "tes2",
@@ -100,6 +109,14 @@ export const userData: Record<string, userData> = {
     email: "noteam2@mail.com",
     password: "noteam123",
     cv_url: "https://example.com/cvs/noteam2.pdf",
+    is_admin: false,
+  },
+  userWithGoogleAuth: {
+    _id: new mongoose.Types.ObjectId("68d7b9efec4278bd59d2ab28"),
+    name: "Google Auth User",
+    email: "google@mail.com",
+    google_id: "google-oauth2|123456789012345678901",
+    cv_url: "https://example.com/cvs/google.pdf",
     is_admin: false,
   },
 };

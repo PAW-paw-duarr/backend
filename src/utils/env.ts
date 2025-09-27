@@ -6,7 +6,7 @@ const envSchema = z.object({
 
   MONGO_URL: z.url("Invalid MongoDB URL format"),
 
-  DOMAIN: z.url("DOMAIN must be a valid URL"),
+  DOMAIN: z.url("DOMAIN must be a valid URL").transform((val) => val.replace(/\/$/, "")),
   URL: z.object({
     protocol: z.string(),
     hostname: z.string(),
@@ -29,7 +29,7 @@ const env: z.infer<typeof envSchema> = envSchema.parse({
   IS_PROD: process.env.NODE_ENV === "production",
 
   MONGO_URL: process.env.MONGO_URL,
-  DOMAIN: process.env.DOMAIN,
+  DOMAIN: process.env.DOMAIN?.replace(/^\/+/, ""),
   URL: parseUrl(process.env.DOMAIN || ""),
 
   SECRET_KEY: process.env.SECRET_KEY,

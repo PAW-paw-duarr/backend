@@ -32,10 +32,6 @@ export class UserClass {
   @prop({ required: true, type: Boolean, default: false })
   public is_admin!: boolean;
 
-  public static async getAllData(this: ReturnModelType<typeof UserClass>) {
-    return this.find({}, { id: 1, name: 1 });
-  }
-
   public static async createUserPassword(
     this: ReturnModelType<typeof UserClass>,
     params: createUserPasswordParams,
@@ -57,6 +53,10 @@ export class UserClass {
     const { name, email, google_id } = params;
     const existingUser = await this.findOne({ email });
     if (existingUser) {
+      if (!existingUser.google_id) {
+        existingUser.google_id = google_id;
+        await existingUser.save();
+      }
       return existingUser;
     }
     const user = new this({ name, email, google_id });

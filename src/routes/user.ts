@@ -7,10 +7,16 @@ import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import {
   serviceAdminGetAllUsers,
+  serviceDeleteUserById,
   serviceGetUserById,
   serviceUpdateUser,
 } from "~/services/userService.js";
-import { httpBadRequestError, httpInternalServerError, sendHttpError } from "~/utils/httpError.js";
+import {
+  httpBadRequestError,
+  httpInternalServerError,
+  httpUnauthorizedError,
+  sendHttpError,
+} from "~/utils/httpError.js";
 
 const router = express.Router();
 
@@ -18,7 +24,7 @@ router.get("/", async (_, res) => {
   const currentUser = res.locals.user;
 
   if (!currentUser.is_admin) {
-    sendHttpError({ res, error: httpBadRequestError, message: "Unauthorized" });
+    sendHttpError({ res, error: httpUnauthorizedError, message: "Unauthorized" });
     return;
   }
 
@@ -34,8 +40,20 @@ router.get("/", async (_, res) => {
 
 router.get("/me", async (_, res) => {
   const user = res.locals.user;
-  res.status(200).json(user);
-  return;
+
+  try {
+    const service = await serviceGetUserById(user.id);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success).json(service.data);
+    return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
+    return;
+  }
 });
 
 router.get("/:id", async (req, res) => {
@@ -138,6 +156,34 @@ router.patch("/", uploadCvFile, async (req, res) => {
     }
 
     res.status(service.success).json(service.data);
+    return;
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  const user = res.locals.user;
+  if (!user.is_admin) {
+    sendHttpError({ res, error: httpUnauthorizedError, message: "Unauthorized" });
+    return;
+  }
+
+  if (user.id === id) {
+    sendHttpError({ res, error: httpBadRequestError, message: "You cannot delete yourself" });
+    return;
+  }
+
+  try {
+    const service = await serviceDeleteUserById(id);
+    if (service.success === undefined) {
+      sendHttpError({ res, error: service.error, message: service.data });
+      return;
+    }
+
+    res.status(service.success).send();
+    return;
+  } catch {
+    sendHttpError({ res, error: httpInternalServerError });
     return;
   }
 });

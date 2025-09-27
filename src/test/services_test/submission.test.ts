@@ -85,13 +85,45 @@ describe("SubmissionService", () => {
       const userWithoutTeam = await UserModel.create({
         ...userData.teamMemberWithoutTitle,
         _id: new mongoose.Types.ObjectId(),
-        username: "userWithoutTeam",
-        email: "noteam@example.com",
+        username: "userWithoutTeam2",
+        email: "noteam2@example.com",
         team: null,
       });
 
       const result = await serviceGetAllSubmissions(userWithoutTeam);
       expect(result.error).toBeDefined();
+      expect(result.error?.status).toBe(400);
+      expect(result.data).toBe("User is not in a team");
+    });
+
+    it("should handle team not found in database", async () => {
+      const userWithInvalidTeam = await UserModel.create({
+        ...userData.teamMemberWithoutTitle,
+        _id: new mongoose.Types.ObjectId(),
+        username: "userWithInvalidTeam",
+        email: "invalidteam@example.com",
+        team: new mongoose.Types.ObjectId(),
+      });
+
+      const result = await serviceGetAllSubmissions(userWithInvalidTeam);
+      expect(result.error).toBeDefined();
+      expect(result.error?.status).toBe(400);
+      expect(result.data).toBe("User is not in a team");
+    });
+
+    it("should only return submissions where team is involved as submitter or target", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
+      const result = await serviceGetAllSubmissions(user!);
+
+      expect(result.success).toBe(200);
+      assert(result.success === 200);
+
+      const userTeamId = user!.team!.toString();
+      for (const submission of result.data!) {
+        expect(submission.team_id === userTeamId || submission.team_target_id === userTeamId).toBe(
+          true,
+        );
+      }
     });
   });
 
@@ -127,6 +159,24 @@ describe("SubmissionService", () => {
       expect(result.data!.id).toBe(submissionId);
     });
 
+    it("should return 404 when user's team is not involved in submission", async () => {
+      // Create a submission that doesn't involve the user's team
+      const unrelatedTeam1 = new mongoose.Types.ObjectId();
+      const unrelatedTeam2 = new mongoose.Types.ObjectId();
+      const unrelatedSubmission = await SubmissionModel.create({
+        team: unrelatedTeam1,
+        team_target: unrelatedTeam2,
+        grand_design_url: "http://example.com/design.pdf",
+        accepted: false,
+      });
+
+      const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
+      const result = await serviceGetSubmissionById(unrelatedSubmission._id.toString(), user!);
+
+      expect(result.error?.status).toBe(404);
+      expect(result.data).toBe("Submission not found");
+    });
+
     it("should return 400 for invalid ObjectId format", async () => {
       const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
       const result = await serviceGetSubmissionById("invalid-id", user!);
@@ -145,6 +195,22 @@ describe("SubmissionService", () => {
       expect(result.error?.status).toBe(404);
       expect(result.data).toBe("Submission not found");
     });
+
+    it("should handle user without team", async () => {
+      const userWithoutTeam = await UserModel.create({
+        ...userData.teamMemberWithoutTitle,
+        _id: new mongoose.Types.ObjectId(),
+        username: "userWithoutTeam2",
+        email: "noteam2@example.com",
+        team: null,
+      });
+
+      const submissionId = submissionData.submissionFromTeamA._id!.toString();
+      const result = await serviceGetSubmissionById(submissionId, userWithoutTeam);
+
+      expect(result.error?.status).toBe(400);
+      expect(result.data).toBe("User is not in a team");
+    });
   });
 
   describe("serviceCreateASubmission", () => {
@@ -162,6 +228,19 @@ describe("SubmissionService", () => {
       const savedSubmission = await SubmissionModel.findById(result.data!.id);
       expect(savedSubmission).toBeDefined();
       expect(savedSubmission!.grand_design_url).toBe(createSubmissionPayload.grand_design_url);
+    });
+
+    it("should prevent duplicate submissions from same team to same target", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
+
+      // Create first submission
+      await serviceCreateASubmission(user!, createSubmissionPayload);
+
+      // Try to create duplicate submission
+      const result = await serviceCreateASubmission(user!, createSubmissionPayload);
+
+      expect(result.error?.status).toBe(400);
+      expect(result.data).toBe("A submission from the same team already exists");
     });
 
     it("should return 401 for team member (non-leader)", async () => {
@@ -223,6 +302,8 @@ describe("SubmissionService", () => {
 
       const result = await serviceCreateASubmission(userWithoutTeam, createSubmissionPayload);
       expect(result.error).toBeDefined();
+      expect(result.error?.status).toBe(400);
+      expect(result.data).toBe("User is not in a team");
     });
   });
 
@@ -252,6 +333,39 @@ describe("SubmissionService", () => {
       const user = await UserModel.findById(userData.teamLeaderWithoutTitle._id);
       const submissionId = submissionData.submissionFromTeamA._id!.toString();
 
+      const result = await serviceResponseSubmission(submissionId, user!, false);
+
+      expect(result.success).toBe(200);
+      assert(result.success === 200);
+      expect(result.data!.accepted).toBe(false);
+    });
+
+    it("should return complete submission data after response", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithoutTitle._id);
+      const submissionId = submissionData.submissionFromTeamA._id!.toString();
+
+      const result = await serviceResponseSubmission(submissionId, user!, true);
+
+      expect(result.success).toBe(200);
+      assert(result.success === 200);
+
+      const submission = result.data!;
+      expect(submission).toHaveProperty("id");
+      expect(submission).toHaveProperty("team_id");
+      expect(submission).toHaveProperty("team_target_id");
+      expect(submission).toHaveProperty("grand_design_url");
+      expect(submission).toHaveProperty("accepted");
+      expect(submission.accepted).toBe(true);
+    });
+
+    it("should allow changing response from accept to reject", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithoutTitle._id);
+      const submissionId = submissionData.submissionFromTeamA._id!.toString();
+
+      // First accept
+      await serviceResponseSubmission(submissionId, user!, true);
+
+      // Then reject
       const result = await serviceResponseSubmission(submissionId, user!, false);
 
       expect(result.success).toBe(200);
@@ -300,6 +414,22 @@ describe("SubmissionService", () => {
       expect(result.error?.status).toBe(404);
       expect(result.data).toBe("Submission not found");
     });
+
+    it("should handle user without team", async () => {
+      const userWithoutTeam = await UserModel.create({
+        ...userData.teamMemberWithoutTitle,
+        _id: new mongoose.Types.ObjectId(),
+        username: "userWithoutTeam3",
+        email: "noteam3@example.com",
+        team: null,
+      });
+
+      const submissionId = submissionData.submissionFromTeamA._id!.toString();
+      const result = await serviceResponseSubmission(submissionId, userWithoutTeam, true);
+
+      expect(result.error?.status).toBe(401);
+      expect(result.data).toBe("Only team leader can respond to submissions");
+    });
   });
 
   describe("serviceAdminGetAllSubmissions", () => {
@@ -329,6 +459,9 @@ describe("SubmissionService", () => {
       expect(firstSubmission).toHaveProperty("id");
       expect(firstSubmission).toHaveProperty("team_id");
       expect(firstSubmission).toHaveProperty("team_target_id");
+      expect(typeof firstSubmission.id).toBe("string");
+      expect(typeof firstSubmission.team_id).toBe("string");
+      expect(typeof firstSubmission.team_target_id).toBe("string");
     });
 
     it("should return empty array when no submissions exist", async () => {
@@ -360,7 +493,7 @@ describe("SubmissionService", () => {
       expect(result.data!.id).toBe(submissionId);
     });
 
-    it("should return 400 for invalid ObjectId format", async () => {
+    it("should return 400 for invalid id", async () => {
       const result = await serviceAdminGetSubmissionById("invalid-id");
 
       expect(result.error?.status).toBe(400);
@@ -373,23 +506,6 @@ describe("SubmissionService", () => {
 
       expect(result.error?.status).toBe(404);
       expect(result.data).toBe("Submission not found");
-    });
-
-    it("should return complete submission data structure", async () => {
-      const submissionId = submissionData.submissionFromTeamA._id!.toString();
-      const result = await serviceAdminGetSubmissionById(submissionId);
-
-      expect(result.success).toBe(200);
-      assert(result.success === 200);
-
-      const submission = result.data!;
-      expect(submission.id).toBe(submissionData.submissionFromTeamA._id!.toString());
-      expect(submission.team_id).toBe(submissionData.submissionFromTeamA.team.toString());
-      expect(submission.team_target_id).toBe(
-        submissionData.submissionFromTeamA.team_target.toString(),
-      );
-      expect(submission.grand_design_url).toBe(submissionData.submissionFromTeamA.grand_design_url);
-      expect(submission.accepted).toBe(submissionData.submissionFromTeamA.accepted);
     });
   });
 
@@ -412,7 +528,7 @@ describe("SubmissionService", () => {
       expect(deletedSubmission).toBeNull();
     });
 
-    it("should return 400 for invalid ObjectId format", async () => {
+    it("should return 400 for invalid id", async () => {
       const result = await serviceAdminDeleteSubmissionById("invalid-id");
 
       expect(result.error?.status).toBe(400);

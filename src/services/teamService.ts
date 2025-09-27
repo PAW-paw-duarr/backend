@@ -13,6 +13,7 @@ import {
 
 export async function serviceGetTeamById(
   id: string,
+  currentUser: UserClass,
 ): retService<components["schemas"]["data-team"]> {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return { error: httpBadRequestError, data: "Invalid team ID" };
@@ -23,6 +24,15 @@ export async function serviceGetTeamById(
     return { error: httpNotFoundError, data: "Team not found" };
   }
 
+  const member = await UserModel.find({ team: data._id });
+  const memberData: components["schemas"]["data-user-short"][] = [];
+  member.forEach((m) => {
+    memberData.push({
+      id: m.id,
+      name: m.name,
+    });
+  });
+
   const team: components["schemas"]["data-team"] = {
     id: data.id,
     name: data.name,
@@ -31,7 +41,12 @@ export async function serviceGetTeamById(
     title_id: data.title ? data.title._id.toString() : undefined,
     period: data.period,
     code: data.code,
+    member: memberData,
   };
+
+  if (currentUser.team?._id.toString() !== id && !currentUser.is_admin) {
+    delete team.code;
+  }
 
   return { success: 200, data: team };
 }
@@ -41,13 +56,25 @@ export async function serviceKickMemberTeam(userId: string, currentUser: UserCla
     return { error: httpBadRequestError, data: "Invalid user ID" };
   }
 
-  const currentTeam = await TeamModel.findOne({ _id: currentUser.team?._id.toString() });
+  const targetUser = await UserModel.findById(userId);
+  if (!targetUser) {
+    return { error: httpNotFoundError, data: "Member Not Found" };
+  }
+  if (!targetUser.team) {
+    return { error: httpBadRequestError, data: "Member is not in a team" };
+  }
+
+  const currentTeam = await TeamModel.findById(currentUser.team?._id.toString());
   const currentUserId = currentUser.id;
-  if (userId === currentUserId || currentUser.email !== currentTeam?.leader_email) {
+  if (
+    userId === currentUserId ||
+    currentUser.email !== currentTeam?.leader_email ||
+    targetUser.team._id.toString() !== currentTeam?._id.toString()
+  ) {
     return { error: httpUnauthorizedError, data: "You cannot kick this member" };
   }
 
-  const data = await UserModel.findByIdAndUpdate(userId, { team_id: null });
+  const data = await UserModel.findByIdAndUpdate(userId, { $unset: { team: 1 } });
   if (!data) {
     return { error: httpNotFoundError, data: "Member Not Found" };
   }
@@ -98,8 +125,8 @@ export async function serviceAdminDeleteTeamById(team_id: string): retService<un
     return { error: httpNotFoundError, data: "Team not found" };
   }
 
-  await TeamModel.deleteOne({ _id: team_id });
-  await UserModel.updateMany({ team_id: team_id }, { team_id: null });
+  await data.deleteOne();
+  await UserModel.updateMany({ team: team_id }, { $unset: { team: "" } });
 
   return { success: 204 };
 }
@@ -119,47 +146,12 @@ export async function serviceAdminGetAllTeams(): retService<components["schemas"
   return { success: 200, data: teams };
 }
 
-export async function serviceAdminGetTeamById(
-  id: string,
-): retService<components["schemas"]["data-team"]> {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return { error: httpBadRequestError, data: "Invalid team ID" };
-  }
-
-  const data = await TeamModel.findById(id);
-  if (!data) {
-    return { error: httpNotFoundError, data: "Team not found" };
-  }
-
-  const team: components["schemas"]["data-team"] = {
-    id: data.id,
-    name: data.name,
-    leader_email: data.leader_email,
-    category: data.category,
-    title_id: data.title ? data.title._id.toString() : undefined,
-    period: data.period,
-    code: data.code,
-  };
-  return { success: 200, data: team };
-}
-
-interface retServiceCreateTeams {
-  success_count: number;
-  error_count: number;
-  data?: components["schemas"]["data-team"][];
-  error_data?: Array<{
-    name: string;
-    leader_email: string;
-    error: string;
-    category: components["schemas"]["data-team-new"]["category"];
-  }>;
-}
 export async function serviceAdminCreateTeams(
   teamData: components["schemas"]["data-team-new"][],
   new_period?: boolean,
 ): Promise<{
   success: number;
-  data: retServiceCreateTeams;
+  data: components["schemas"]["RespGenerateNewTeam"];
 }> {
   let period: number;
   if (new_period) {
@@ -188,7 +180,7 @@ export async function serviceAdminCreateTeams(
         leader_email: team.leader_email,
         category: team.category,
         period: period,
-        code: nodeCrypto.randomUUID().replace(/-/g, "").slice(0, 10),
+        code: nodeCrypto.randomUUID().replace(/-/g, ""),
       };
 
       const insertedTeam = await TeamModel.create(teamToCreate);
@@ -216,7 +208,8 @@ export async function serviceAdminCreateTeams(
     }
   }
 
-  const returnData: retServiceCreateTeams = {
+  const returnData: components["schemas"]["RespGenerateNewTeam"] = {
+    period: period,
     success_count: successCount,
     error_count: errorCount,
     ...(successfulTeams.length > 0 && { data: successfulTeams }),

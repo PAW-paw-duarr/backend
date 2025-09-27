@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { afterEach, assert, beforeEach, describe, expect, it } from "vitest";
 import type { components } from "~/lib/api/schema.js";
 import { ConfigModel } from "~/models/config.js";
+import { SubmissionModel } from "~/models/submissions.js";
 import { TeamModel } from "~/models/teams.js";
 import { TitleModel } from "~/models/titles.js";
 import { UserModel } from "~/models/users.js";
@@ -135,6 +136,54 @@ describe("TitleService", () => {
       expect(result.error?.status).toBe(404);
       expect(result.data).toBe("Title not found");
     });
+
+    it("should handle user with accepted submission correctly", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithoutTitle._id);
+      const titleId = titleData.currentPeriodTitle._id!.toString();
+
+      await SubmissionModel.create({
+        team: user!.team?._id,
+        team_target: teamsData.teamWithTitleCurrentPeriod._id,
+        accepted: true,
+        grand_design_url: "https://example.com/design.pdf",
+        period: configData.current_period,
+      });
+
+      const result = await serviceGetTitleByID(titleId, user!);
+
+      expect(result.success).toBe(200);
+      assert(result.success === 200);
+      expect(result.data!.proposal_url).toBeDefined();
+    });
+
+    it("should not show proposal_url for user with non-accepted submission", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithoutTitle._id);
+      const titleId = titleData.currentPeriodTitle._id!.toString();
+
+      await SubmissionModel.create({
+        team: user!.team?._id,
+        team_target: teamsData.teamWithTitleCurrentPeriod._id,
+        accepted: false,
+        grand_design_url: "https://example.com/design.pdf",
+        period: configData.current_period,
+      });
+
+      const result = await serviceGetTitleByID(titleId, user!);
+
+      expect(result.success).toBe(200);
+      assert(result.success === 200);
+      expect(result.data!.proposal_url).toBeUndefined();
+    });
+
+    it("should handle malformed ObjectId variations", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
+      const invalidIds = ["", "123", "invalid-id-format", "61234567890123456789012g"];
+
+      for (const invalidId of invalidIds) {
+        const result = await serviceGetTitleByID(invalidId, user!);
+        expect(result.error?.status).toBe(400);
+      }
+    });
   });
 
   describe("serviceCreateTitle", () => {
@@ -147,7 +196,6 @@ describe("TitleService", () => {
       assert(result.success === 201);
       expect(result.data).toEqual({ id: result.data.id, ...createTitlePayload });
 
-      // Verify title was actually saved to database
       const savedTitle = await TitleModel.findById(result.data.id);
       expect(savedTitle).toBeDefined();
       expect(savedTitle!.title).toBe(createTitlePayload.title);
@@ -165,11 +213,9 @@ describe("TitleService", () => {
     it("should return 400 if team already has a title for current period", async () => {
       const user = await UserModel.findById(userData.teamLeaderWithoutTitle._id);
 
-      // First creation should succeed
       const firstResult = await serviceCreateTitle(user!, createTitlePayload);
       expect(firstResult.success).toBe(201);
 
-      // Second creation should fail
       const secondResult = await serviceCreateTitle(user!, createTitlePayload);
       expect(secondResult.error?.status).toBe(400);
       expect(secondResult.data).toBe("Team already has a title");
@@ -201,11 +247,7 @@ describe("TitleService", () => {
       const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
       const updateData = { title: "Updated Title", desc: "Updated description" };
 
-      const result = await serviceUpdateTitle(
-        titleData.currentPeriodTitle._id!.toString(),
-        user!,
-        updateData,
-      );
+      const result = await serviceUpdateTitle(user!, updateData);
 
       expect(result.success).toBe(200);
       assert(result.success === 200);
@@ -214,50 +256,50 @@ describe("TitleService", () => {
     });
 
     it("should return 401 for non-owner team leader", async () => {
-      const user = await UserModel.findById(userData.teamLeaderWithoutTitle._id);
+      const user = await UserModel.findById(userData.teamMemberWithTitle._id);
       const updateData = { title: "Updated Title" };
 
-      const result = await serviceUpdateTitle(
-        titleData.currentPeriodTitle._id!.toString(),
-        user!,
-        updateData,
-      );
+      const result = await serviceUpdateTitle(user!, updateData);
 
       expect(result.error?.status).toBe(401);
     });
 
-    it("should return 400 for invalid ObjectId format", async () => {
+    it("should prevent update when title has submissions", async () => {
       const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
-      const result = await serviceUpdateTitle("invalid-id", user!, { title: "Updated" });
 
-      expect(result.error?.status).toBe(400);
-      expect(result.data).toBe("Invalid title ID");
-    });
-
-    it("should return 404 for valid ObjectId but non-existent title", async () => {
-      const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
-      const result = await serviceUpdateTitle(new mongoose.Types.ObjectId().toString(), user!, {
-        title: "Updated",
+      await SubmissionModel.create({
+        team: user!.team?._id,
+        team_target: teamsData.teamWithTitleCurrentPeriod._id,
+        accepted: false,
+        grand_design_url: "https://example.com/design.pdf",
+        period: configData.current_period,
       });
 
-      expect(result.error?.status).toBe(404);
-      expect(result.data).toBe("Title not found");
+      const result = await serviceUpdateTitle(user!, { title: "Updated Title" });
+
+      expect(result.error?.status).toBe(400);
+      expect(result.data).toBe("Cannot update title after submission");
     });
 
-    it("should partially update title fields", async () => {
+    it("should handle partial updates correctly", async () => {
       const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
-      const updateData = { title: "Partially Updated" };
+      const partialUpdate = { desc: "Only description updated" };
 
-      const result = await serviceUpdateTitle(
-        titleData.currentPeriodTitle._id!.toString(),
-        user!,
-        updateData,
-      );
+      const result = await serviceUpdateTitle(user!, partialUpdate);
 
       expect(result.success).toBe(200);
       assert(result.success === 200);
-      expect(result.data!.title).toBe("Partially Updated");
-      expect(result.data!.desc).toBe(titleData.currentPeriodTitle.desc); // Should remain unchanged
+      expect(result.data!.desc).toBe("Only description updated");
+      expect(result.data!.title).toBe(titleData.currentPeriodTitle.title);
+    });
+
+    it("should handle empty update payload", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
+
+      const result = await serviceUpdateTitle(user!, {});
+
+      expect(result.success).toBe(200);
+      assert(result.success === 200);
     });
   });
 
@@ -300,6 +342,17 @@ describe("TitleService", () => {
       assert(result.success === 200);
       expect(result.data).toEqual([]);
     });
+
+    it("should include all periods without filtering", async () => {
+      const result = await serviceAdminGetAllTitles();
+
+      expect(result.success).toBe(200);
+      assert(result.success === 200);
+
+      const titleIds = result.data!.map((t) => t.id);
+      expect(titleIds).toContain(titleData.currentPeriodTitle._id!.toString());
+      expect(titleIds).toContain(titleData.previousPeriodTitle._id!.toString());
+    });
   });
 
   describe("serviceAdminDeleteTitleByID", () => {
@@ -316,7 +369,6 @@ describe("TitleService", () => {
 
       expect(result.success).toBe(204);
 
-      // Verify title was actually deleted
       const deletedTitle = await TitleModel.findById(titleId);
       expect(deletedTitle).toBeNull();
     });

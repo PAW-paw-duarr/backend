@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { afterEach, assert, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import type { components } from "~/lib/api/schema.js";
 import { ConfigModel } from "~/models/config.js";
 import { TeamModel } from "~/models/teams.js";
@@ -24,6 +24,7 @@ describe("UserService", () => {
     for (const user of Object.values(userData)) {
       await UserModel.create(user);
     }
+    vi.clearAllMocks();
   });
 
   afterEach(async () => {
@@ -61,10 +62,13 @@ describe("UserService", () => {
     });
 
     it("should return 400 for invalid ObjectId format", async () => {
-      const result = await serviceGetUserById("invalid-id");
+      const invalidIds = ["invalid-id", "123", "", "not-an-object-id", "abc123def"];
 
-      expect(result.error?.status).toBe(400);
-      expect(result.data).toBe("Invalid user ID");
+      for (const invalidId of invalidIds) {
+        const result = await serviceGetUserById(invalidId);
+        expect(result.error?.status).toBe(400);
+        expect(result.data).toBe("Invalid user ID");
+      }
     });
 
     it("should return 404 for valid ObjectId but non-existent user", async () => {
@@ -76,19 +80,37 @@ describe("UserService", () => {
     });
 
     it("should handle user with google_id", async () => {
-      // Create user with google_id
-      const userWithGoogle = await UserModel.create({
-        ...userData.userWithoutTeam,
-        _id: new mongoose.Types.ObjectId(),
-        email: "google@mail.com",
-        google_id: "google_123456",
-      });
-
-      const result = await serviceGetUserById(userWithGoogle._id.toString());
+      const result = await serviceGetUserById(userData.userWithGoogleAuth._id!.toString());
 
       expect(result.success).toBe(200);
       assert(result.success === 200);
-      expect(result.data!.google_id).toBe("google_123456");
+      expect(result.data!.google_id).toBe(userData.userWithGoogleAuth.google_id);
+    });
+
+    it("should handle user with null/undefined optional fields", async () => {
+      // Create user with minimal data
+      const minimalUser = await UserModel.create({
+        _id: new mongoose.Types.ObjectId(),
+        email: "minimal@test.com",
+        name: "Minimal User",
+        password: "password123",
+      });
+
+      const result = await serviceGetUserById(minimalUser._id.toString());
+
+      expect(result.success).toBe(200);
+      assert(result.success === 200);
+      expect(result.data!.cv_url).toBeUndefined();
+      expect(result.data!.google_id).toBeUndefined();
+      expect(result.data!.team_id).toBeUndefined();
+    });
+
+    it("should handle very long ObjectId strings", async () => {
+      const veryLongId = "507f1f77bcf86cd799439011" + "extracharacters";
+      const result = await serviceGetUserById(veryLongId);
+
+      expect(result.error?.status).toBe(400);
+      expect(result.data).toBe("Invalid user ID");
     });
   });
 
@@ -145,6 +167,23 @@ describe("UserService", () => {
       expect(result.data!.name).toBe(userData.teamLeaderWithTitle.name);
       expect(result.data!.email).toBe(userData.teamLeaderWithTitle.email);
     });
+
+    it("should not allow email or password update for Google authenticated users", async () => {
+      const googleUser = await UserModel.findOne({
+        google_id: userData.userWithGoogleAuth.google_id,
+      });
+      const updatePayload = { email: "email@mail.com", password: "newpass" };
+
+      const result = await serviceUpdateUser(googleUser!, updatePayload);
+
+      expect(result.success).toBe(200);
+      assert(result.success === 200);
+      // Email and password should remain unchanged
+      expect(result.data!.email).toBe(userData.userWithGoogleAuth.email);
+      expect((await UserModel.findById(result.data!.id))!.password).toBe(
+        userData.userWithGoogleAuth.password,
+      );
+    });
   });
 
   describe("serviceDeleteUserById", () => {
@@ -161,10 +200,13 @@ describe("UserService", () => {
     });
 
     it("should return 400 for invalid ObjectId format", async () => {
-      const result = await serviceDeleteUserById("invalid-id");
+      const invalidIds = ["invalid-id", "123", "", "not-an-object-id"];
 
-      expect(result.error?.status).toBe(400);
-      expect(result.data).toBe("Invalid user ID");
+      for (const invalidId of invalidIds) {
+        const result = await serviceDeleteUserById(invalidId);
+        expect(result.error?.status).toBe(400);
+        expect(result.data).toBe("Invalid user ID");
+      }
     });
 
     it("should return 404 for valid ObjectId but non-existent user", async () => {
@@ -197,6 +239,17 @@ describe("UserService", () => {
       const deletedUser = await UserModel.findById(userId);
       expect(deletedUser).toBeNull();
     });
+
+    it("should handle double deletion attempts", async () => {
+      const userId = userData.userWithoutTeam._id!.toString();
+
+      const firstResult = await serviceDeleteUserById(userId);
+      expect(firstResult.success).toBe(204);
+
+      const secondResult = await serviceDeleteUserById(userId);
+      expect(secondResult.error?.status).toBe(404);
+      expect(secondResult.data).toBe("User not found");
+    });
   });
 
   describe("serviceAdminGetAllUsers", () => {
@@ -222,6 +275,7 @@ describe("UserService", () => {
       expect(firstUser).not.toHaveProperty("email");
       expect(firstUser).not.toHaveProperty("password");
       expect(firstUser).not.toHaveProperty("cv_url");
+      expect(firstUser).not.toHaveProperty("google_id");
     });
 
     it("should return empty array when no users exist", async () => {

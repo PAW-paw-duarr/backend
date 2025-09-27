@@ -155,7 +155,7 @@ router.delete("/:id", async (req, res) => {
     sendHttpError({
       res,
       error: httpBadRequestError,
-      message: "Only ADMIN can delete submissions",
+      message: "Unauthorized",
     });
     return;
   }

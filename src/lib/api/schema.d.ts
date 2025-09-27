@@ -195,7 +195,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/team/kick": {
+  "/team/kick/{id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -290,7 +290,7 @@ export interface paths {
     options?: never;
     head?: never;
     /**
-     * Change user
+     * Update user
      * @description change user data
      */
     patch: operations["patch-api-user"];
@@ -393,6 +393,7 @@ export interface components {
       category?: components["schemas"]["CategoryCapstone"];
       period?: number;
       code?: string;
+      member?: components["schemas"]["data-user-short"][];
     };
     "data-team-short": {
       id?: string;
@@ -404,6 +405,18 @@ export interface components {
       name: string;
       leader_email: string;
       category: components["schemas"]["CategoryCapstone"];
+    };
+    RespGenerateNewTeam: {
+      success_count: number;
+      error_count: number;
+      data?: components["schemas"]["data-team"][];
+      error_data?: {
+        name: string;
+        leader_email: string;
+        category: components["schemas"]["CategoryCapstone"];
+        error: string;
+      }[];
+      period: number;
     };
     "data-user": {
       id?: string;
@@ -844,19 +857,12 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        id: string;
+      };
       cookie?: never;
     };
-    requestBody?: {
-      content: {
-        /** @example {
-         *       "id": "123"
-         *     } */
-        "application/json": {
-          user_id: string;
-        };
-      };
-    };
+    requestBody?: never;
     responses: {
       204: {
         headers: {
@@ -864,6 +870,38 @@ export interface operations {
         };
         content: {
           "application/json": Record<string, never>;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -877,14 +915,24 @@ export interface operations {
     };
     requestBody?: {
       content: {
+        /** @example {
+         *       "new_period": true,
+         *       "team_data": [
+         *         {
+         *           "name": "Team-1",
+         *           "leader_email": "tes2@mail.com",
+         *           "category": "Kesehatan"
+         *         }
+         *       ]
+         *     } */
         "application/json": {
-          new_perios?: boolean;
+          new_period?: boolean;
           team_data: components["schemas"]["data-team-new"][];
         };
       };
     };
     responses: {
-      200: {
+      201: {
         headers: {
           [name: string]: unknown;
         };
@@ -892,13 +940,14 @@ export interface operations {
           "application/json": {
             success_count: number;
             error_count: number;
-            data: components["schemas"]["data-team"][];
-            error_data: {
+            data?: components["schemas"]["data-team"][];
+            error_data?: {
               name: string;
               leader_email: string;
               category: components["schemas"]["CategoryCapstone"];
               error: string;
             }[];
+            period: number;
           };
         };
       };
@@ -1023,6 +1072,30 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["data-user"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
