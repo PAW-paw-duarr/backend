@@ -51,7 +51,7 @@ export class SubmissionsClass {
     return this.findOneAndUpdate(
       { _id: new mongoose.Types.ObjectId(id), team_target: currentTeamId },
       { accepted: accept },
-      { new: true },
+      { new: true, runValidators: true },
     );
   }
 

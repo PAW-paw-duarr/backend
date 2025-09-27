@@ -44,7 +44,10 @@ export async function serviceUpdateUser(
     delete payload.password;
   }
 
-  const data = await UserModel.findByIdAndUpdate(currentUser.id, payload, { new: true });
+  const data = await UserModel.findByIdAndUpdate(currentUser.id, payload, {
+    new: true,
+    runValidators: true,
+  });
   if (!data) {
     return { error: httpNotFoundError, data: "User not found" };
   }

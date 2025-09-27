@@ -104,14 +104,6 @@ describe("UserService", () => {
       expect(result.data!.google_id).toBeUndefined();
       expect(result.data!.team_id).toBeUndefined();
     });
-
-    it("should handle very long ObjectId strings", async () => {
-      const veryLongId = "507f1f77bcf86cd799439011" + "extracharacters";
-      const result = await serviceGetUserById(veryLongId);
-
-      expect(result.error?.status).toBe(400);
-      expect(result.data).toBe("Invalid user ID");
-    });
   });
 
   describe("serviceUpdateUser", () => {

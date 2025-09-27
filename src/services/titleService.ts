@@ -115,23 +115,25 @@ export async function serviceUpdateTitle(
     return { error: httpUnauthorizedError, data: "Only team leader can update title" };
   }
 
-  const id = currentTeam.title._id.toString();
-  const data = await TitleModel.findById(id);
+  const titleId = currentTeam.title._id.toString();
+  const data = await TitleModel.findById(titleId);
   if (!data) {
     return { error: httpNotFoundError, data: "Title not found" };
   }
 
   //check if has already submission to this title
   const hasSubmission = await SubmissionModel.findOne({
-    team: currentTeam.id,
+    team_target: currentTeam._id,
   });
   if (hasSubmission) {
     return { error: httpBadRequestError, data: "Cannot update title after submission" };
   }
 
-  // update the title
-  await TitleModel.findByIdAndUpdate(id, payload);
-  const updatedData = await TitleModel.findById(id);
+  // update the title and get the updated document
+  const updatedData = await TitleModel.findByIdAndUpdate(titleId, payload, {
+    new: true,
+    runValidators: true,
+  });
   if (!updatedData) {
     return { error: httpNotFoundError, data: "Title not found after update" };
   }

@@ -29,7 +29,7 @@ const env: z.infer<typeof envSchema> = envSchema.parse({
   IS_PROD: process.env.NODE_ENV === "production",
 
   MONGO_URL: process.env.MONGO_URL,
-  DOMAIN: process.env.DOMAIN?.replace(/^\/+/, ""),
+  DOMAIN: process.env.DOMAIN,
   URL: parseUrl(process.env.DOMAIN || ""),
 
   SECRET_KEY: process.env.SECRET_KEY,
