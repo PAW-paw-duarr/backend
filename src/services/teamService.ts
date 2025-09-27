@@ -57,29 +57,43 @@ export async function serviceJoinTeam(
   code: string,
   currentUser: UserClass,
 ): retService<components["schemas"]["data-team"]> {
-  const team = await TeamModel.findOne({ code });
+  if (currentUser.team) {
+    return { error: httpBadRequestError, data: "User already has a team" };
+  }
+
+  const team = await TeamModel.findOne({ code: code });
   if (!team) {
     return { error: httpNotFoundError, data: "Team not found" };
   }
 
-  const data = await UserModel.findByIdAndUpdate(currentUser.id, { team });
+  const data = await UserModel.findByIdAndUpdate(currentUser.id, { team: team._id });
   if (!data) {
     return { error: httpNotFoundError, data: "Member Not Found" };
   }
 
-  return { success: 200, data: team };
+  const formattedTeam: components["schemas"]["data-team"] = {
+    id: team.id,
+    name: team.name,
+    leader_email: team.leader_email,
+    category: team.category,
+    title_id: team.title ? team.title._id.toString() : undefined,
+    period: team.period,
+    code: team.code,
+  };
+
+  return { success: 200, data: formattedTeam };
 }
 
 // Admin service
 
 export async function serviceAdminDeleteTeamById(team_id: string): retService<undefined> {
   if (!mongoose.Types.ObjectId.isValid(team_id)) {
-    return { error: httpBadRequestError, data: "Invalid submission title ID" };
+    return { error: httpBadRequestError, data: "Invalid team ID" };
   }
 
   const data = await TeamModel.findById(team_id);
   if (!data) {
-    return { error: httpNotFoundError, data: "Title not found" };
+    return { error: httpNotFoundError, data: "Team not found" };
   }
 
   await TeamModel.deleteOne({ _id: team_id });
