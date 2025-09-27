@@ -69,7 +69,7 @@ router.post("/join", async (req, res) => {
   const user = res.locals.user;
 
   try {
-    const service = await serviceJoinTeam(code, user);
+    const service = await serviceJoinTeam(parseResult.data.code, user);
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
       return;
