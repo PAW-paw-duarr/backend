@@ -21,19 +21,17 @@ const router = express.Router();
 router.get("/", async (_, res) => {
   const currentUser = res.locals.user;
 
-  if (!currentUser.team && !currentUser.is_admin) {
+  if (!currentUser.is_admin) {
     sendHttpError({
       res,
-      error: httpUnauthorizedError,
+      error: httpBadRequestError,
       message: "Unauthorized",
     });
     return;
   }
 
   try {
-    const service = currentUser.is_admin
-      ? await serviceAdminGetAllTeams()
-      : await serviceGetTeamById(currentUser.team?._id.toString() || "", currentUser);
+    const service = await serviceAdminGetAllTeams();
 
     if (service.success === undefined) {
       sendHttpError({ res, error: service.error, message: service.data });
