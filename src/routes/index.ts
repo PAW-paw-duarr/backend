@@ -3,14 +3,18 @@ import { isFrontendExist } from "~/utils/frontend.js";
 
 const router = express.Router();
 
-router.get("/*", async (_, res) => {
-  const frontend = isFrontendExist();
+const frontend = isFrontendExist();
 
-  if (frontend.exist) {
+if (frontend.exist) {
+  router.use(express.static(frontend.clientPath));
+
+  router.get("/{*any}", (_, res) => {
     res.sendFile(frontend.indexPath);
-  } else {
+  });
+} else {
+  router.get("/{*any}", (_, res) => {
     res.send("Hello world!");
-  }
-});
+  });
+}
 
 export default router;

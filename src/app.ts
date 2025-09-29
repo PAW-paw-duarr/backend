@@ -46,8 +46,8 @@ app.use("/api", apiRouter);
 // Protected file routes (non-API)
 const fileRoutes = express.Router();
 fileRoutes.use(authMiddleware);
-fileRoutes.use("/file", fileRouter);
-app.use("/", fileRoutes);
+fileRoutes.use("/", fileRouter);
+app.use("/file", fileRoutes);
 
 // catch 404 and forward to error handler
 app.use((_, res) => {
