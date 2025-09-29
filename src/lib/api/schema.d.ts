@@ -12,20 +12,26 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * List Title
-     * @description list all available title (previous period)
+     * List All Titles
+     * @description Fetches a list of all capstone titles
+     *     NonAdmin: only from previous the period
+     *     Admin : all titles
      */
     get: operations["get-api-title"];
     put?: never;
     /**
-     * Register Title
-     * @description Register title for next year
+     * Register a New Title
+     * @description Submits and registers a new capstone title for the upcoming period
      */
     post: operations["post-api-title"];
     delete?: never;
     options?: never;
     head?: never;
-    patch?: never;
+    /**
+     * Update an Existing Title
+     * @description Updates the details of a registered title
+     */
+    patch: operations["patch-api-title"];
     trace?: never;
   };
   "/title/{id}": {
@@ -36,21 +42,24 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Detail Title By Id
-     * @description full data from title id
+     * Get Title by ID
+     * @description Retrieves the complete and detailed information for a single capstone title
+     *     NonAdmin: cannot see proposal_url except the owner or the submission is accepted
+     *     Admin : retrieve all data
      */
     get: operations["get-api-title-id"];
     put?: never;
     post?: never;
-    /** Remove Title */
+    /**
+     * Delete a Title
+     * @description Permanently deletes a specific capstone title
+     *     Nonadmin : cannot use this
+     *
+     */
     delete: operations["del-api-title-id"];
     options?: never;
     head?: never;
-    /**
-     * Change Title
-     * @description change title
-     */
-    patch: operations["patch-api-title"];
+    patch?: never;
     trace?: never;
   };
   "/submission": {
@@ -61,8 +70,10 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * List Submission
-     * @description list title submission
+     * List All Title Submissions
+     * @description Fetches a list of all capstone title submissions
+     *     Nonadmin : only submission from and to user team
+     *     Admin : all submission
      */
     get: operations["get-api-submission"];
     put?: never;
@@ -81,13 +92,19 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Detail Submission
-     * @description full data from submission id
+     * Get Submission by ID
+     * @description Retrieves the complete and detailed information for a single submission
+     *     NonAdmin: only submission from and to user team
+     *     Admin : all submission
      */
     get: operations["get-api-submission-id"];
     put?: never;
     post?: never;
-    /** Remove submission */
+    /**
+     * Delete a Submission
+     * @description Deletes a specific submission
+     *     Nonadmin : cannot use this
+     */
     delete: operations["del-api-submission-id"];
     options?: never;
     head?: never;
@@ -104,8 +121,9 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Submit Submission
-     * @description take the title
+     * Submit a Proposal for a Title
+     * @description Allows captain team to submit their project proposal for a chosen title
+     *
      */
     post: operations["post-api-submission-submit"];
     delete?: never;
@@ -124,8 +142,8 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Response Submission
-     * @description response a submission
+     * Accept or Reject a Submission
+     * @description Allows a captain team to respond to a team's submission by either accepting or rejecting it
      */
     post: operations["post-api-submission-response"];
     delete?: never;
@@ -142,8 +160,9 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Current Team
-     * @description get current team detail
+     * List All Teams
+     * @description Fetches a list of all team
+     *     Nonadmin : cannot use this
      */
     get: operations["get-api-team"];
     put?: never;
@@ -162,13 +181,17 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Detail Team By Id
-     * @description get current team detail
+     * Get Team by ID
+     * @description Fetches the public profile and member list for a specific team
      */
     get: operations["get-api-team-id"];
     put?: never;
     post?: never;
-    /** Remove team */
+    /**
+     * Delete a Team
+     * @description Deletes an entire team and its associated data
+     *     Nonadmin : cannot use this
+     */
     delete: operations["del-api-team-id"];
     options?: never;
     head?: never;
@@ -185,8 +208,8 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Join Team
-     * @description join team with id
+     * Join a Team via Invite Code
+     * @description Allows user to become a member of an existing team
      */
     post: operations["post-api-team-join"];
     delete?: never;
@@ -206,8 +229,8 @@ export interface paths {
     put?: never;
     post?: never;
     /**
-     * Kick Member
-     * @description kick member
+     * Remove a Member from Team
+     * @description Remove a specific member from their team
      */
     delete: operations["post-api-team-kick"];
     options?: never;
@@ -225,8 +248,9 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Generate New Team
-     * @description generate new capstone batch
+     * Create New Teams
+     * @description Creates one or more new teams for a capstone period
+     *     Nonadmin : cannot use this
      */
     post: operations["post-api-team-new"];
     delete?: never;
@@ -243,8 +267,8 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Current User
-     * @description get current userdata
+     * Get My User Profile
+     * @description Retrieves the complete profile information for the currently authenticated user
      */
     get: operations["get-api-user-me"];
     put?: never;
@@ -263,13 +287,17 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Detail User By Id
-     * @description get user data by id
+     * Get User Profile by ID
+     * @description Fetches the public profile information for a specific user
      */
     get: operations["api-user-id"];
     put?: never;
     post?: never;
-    /** Remove user */
+    /**
+     * Delete a User
+     * @description Removes a user account
+     *     Nonadmin : cannot use this
+     */
     delete: operations["del-api-admin-user"];
     options?: never;
     head?: never;
@@ -290,8 +318,8 @@ export interface paths {
     options?: never;
     head?: never;
     /**
-     * Update user
-     * @description change user data
+     * Update My User Profil
+     * @description  Updates the profile information for the authenticated user
      */
     patch: operations["patch-api-user"];
     trace?: never;
@@ -303,7 +331,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** List User */
+    /**
+     * List All Users
+     * @description Retrieves a list of all users
+     *     Nonadmin : cannot use this
+     */
     get: operations["get-user"];
     put?: never;
     post?: never;
@@ -322,7 +354,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Password SignIn */
+    /**
+     * Sign In with Email and Password
+     * @description Authenticates a user and creates a new session using their registered email and password credentials
+     */
     post: operations["get-auth-signin-password"];
     delete?: never;
     options?: never;
@@ -339,7 +374,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Password SignUp */
+    /**
+     * Sign Up with Email and Password
+     * @description Registers a new user account in the system using an email and password
+     */
     post: operations["post-auth-signup-password"];
     delete?: never;
     options?: never;
@@ -354,7 +392,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Logout */
+    /**
+     * Sign Out
+     * @description Logs out the currently authenticated user and invalidates their session token
+     */
     get: operations["get-auth-signout"];
     put?: never;
     post?: never;
@@ -371,7 +412,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Google Auth */
+    /**
+     * Authenticate with Google
+     * @description Initiates the OAuth 2.0 flow to allow a user to sign in or sign up using their Google account
+     */
     get: operations["get-auth-google"];
     put?: never;
     post?: never;
@@ -449,6 +493,7 @@ export interface components {
       description?: string;
       photo_url?: string;
       proposal_url?: string;
+      is_taken?: boolean;
     };
     "data-title-short": {
       id?: string;
@@ -459,6 +504,11 @@ export interface components {
     "signin-password-body": {
       email: string;
       password: string;
+    };
+    "signup-password-body": {
+      email: string;
+      password: string;
+      name: string;
     };
     DefaultErrors: {
       status: number;
@@ -492,20 +542,21 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Fetches a list of all project titles from the previous period */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          /** @example [
-           *       {
-           *         "id": "68bd10af65ab2e935d845a4d",
-           *         "title": "title",
-           *         "desc": "desc",
-           *         "photo_url": "https://storage.hilmo.dev/pawpaw/undefined"
-           *       }
-           *     ] */
           "application/json": components["schemas"]["data-title-short"][];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -540,7 +591,7 @@ export interface operations {
       };
     };
     responses: {
-      200: {
+      201: {
         headers: {
           [name: string]: unknown;
         };
@@ -548,54 +599,28 @@ export interface operations {
           "application/json": components["schemas"]["data-title"];
         };
       };
-    };
-  };
-  "get-api-title-id": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
+      400: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          /** @example [
-           *       {
-           *         "id": "68bd10af65ab2e935d845a4d",
-           *         "title": "title",
-           *         "desc": "desc",
-           *         "photo_url": "https://storage.hilmo.dev/pawpaw/undefined"
-           *       }
-           *     ] */
-          "application/json": components["schemas"]["data-title"];
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
-    };
-  };
-  "del-api-title-id": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      204: {
+      401: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "application/json": null;
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -604,9 +629,7 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        id: string;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody?: {
@@ -640,6 +663,128 @@ export interface operations {
           "application/json": components["schemas"]["data-title"];
         };
       };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+    };
+  };
+  "get-api-title-id": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["data-title"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+    };
+  };
+  "del-api-title-id": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": null;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
     };
   };
   "get-api-submission": {
@@ -657,6 +802,14 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["data-submission-short"][];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -680,6 +833,22 @@ export interface operations {
           "application/json": components["schemas"]["data-submission"];
         };
       };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
     };
   };
   "del-api-submission-id": {
@@ -701,6 +870,38 @@ export interface operations {
           "application/json": null;
         };
       };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
     };
   };
   "post-api-submission-submit": {
@@ -714,7 +915,7 @@ export interface operations {
       content: {
         "multipart/form-data": {
           /** @example  */
-          title_id: string;
+          team_target_id: string;
           /**
            * Format: binary
            * @example
@@ -730,6 +931,38 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["data-submission"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -762,6 +995,38 @@ export interface operations {
           "application/json": components["schemas"]["data-submission"];
         };
       };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
     };
   };
   "get-api-team": {
@@ -779,6 +1044,14 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["data-team"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -802,6 +1075,22 @@ export interface operations {
           "application/json": components["schemas"]["data-team"];
         };
       };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
     };
   };
   "del-api-team-id": {
@@ -821,6 +1110,38 @@ export interface operations {
         };
         content: {
           "application/json": null;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -849,6 +1170,38 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["data-team"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -937,18 +1290,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            success_count: number;
-            error_count: number;
-            data?: components["schemas"]["data-team"][];
-            error_data?: {
-              name: string;
-              leader_email: string;
-              category: components["schemas"]["CategoryCapstone"];
-              error: string;
-            }[];
-            period: number;
-          };
+          "application/json": components["schemas"]["RespGenerateNewTeam"];
         };
       };
       400: {
@@ -994,6 +1336,14 @@ export interface operations {
           "application/json": components["schemas"]["data-user"];
         };
       };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
     };
   };
   "api-user-id": {
@@ -1015,6 +1365,22 @@ export interface operations {
           "application/json": components["schemas"]["data-user"];
         };
       };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
     };
   };
   "del-api-admin-user": {
@@ -1034,6 +1400,38 @@ export interface operations {
         };
         content: {
           "application/json": null;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -1117,6 +1515,14 @@ export interface operations {
           "application/json": components["schemas"]["data-user-short"][];
         };
       };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
     };
   };
   "get-auth-signin-password": {
@@ -1128,6 +1534,10 @@ export interface operations {
     };
     requestBody?: {
       content: {
+        /** @example {
+         *       "email": "string",
+         *       "password": "string"
+         *     } */
         "application/json": components["schemas"]["signin-password-body"];
       };
     };
@@ -1138,6 +1548,30 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["data-user"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };
@@ -1151,7 +1585,7 @@ export interface operations {
     };
     requestBody?: {
       content: {
-        "application/json": Record<string, never>;
+        "application/json": components["schemas"]["signup-password-body"];
       };
     };
     responses: {
@@ -1161,6 +1595,22 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["data-user"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };

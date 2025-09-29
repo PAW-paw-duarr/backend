@@ -194,7 +194,11 @@ describe("TitleService", () => {
 
       expect(result.success).toBe(201);
       assert(result.success === 201);
-      expect(result.data).toEqual({ id: result.data.id, ...createTitlePayload });
+      expect(result.data).toEqual({
+        id: result.data.id,
+        is_taken: result.data.is_taken,
+        ...createTitlePayload,
+      });
 
       const savedTitle = await TitleModel.findById(result.data.id);
       expect(savedTitle).toBeDefined();

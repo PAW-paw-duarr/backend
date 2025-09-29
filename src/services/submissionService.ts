@@ -1,6 +1,8 @@
+import { isDocument } from "@typegoose/typegoose";
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
 import { deleteS3Keys, extractS3KeyFromUrl } from "~/lib/s3.js";
+import { ConfigModel } from "~/models/config.js";
 import { SubmissionModel } from "~/models/submissions.js";
 import { TeamModel } from "~/models/teams.js";
 import type { UserClass } from "~/models/users.js";
@@ -115,6 +117,7 @@ export async function serviceCreateASubmission(
   }
 
   const currentTeam = await TeamModel.findById(currentUser.team?._id);
+  const config = await ConfigModel.getConfig();
 
   if (!currentTeam) {
     return { error: httpBadRequestError, data: "User is not in a team" };
@@ -131,6 +134,23 @@ export async function serviceCreateASubmission(
   const targetTeam = await TeamModel.findById(payload.team_target_id);
   if (!targetTeam) {
     return { error: httpNotFoundError, data: "Target team not found" };
+  }
+
+  if (!targetTeam.title) {
+    return { error: httpBadRequestError, data: "Target team has no title" };
+  }
+
+  if (targetTeam.period === config.current_period) {
+    return { error: httpBadRequestError, data: "Cannot submit to current period" };
+  }
+
+  if (targetTeam.period !== config.current_period - 1) {
+    return { error: httpBadRequestError, data: "Only submissions to previous period allowed" };
+  }
+
+  await targetTeam.populate("title");
+  if (isDocument(targetTeam.title) && targetTeam.title.is_taken) {
+    return { error: httpBadRequestError, data: "Target team's title is already taken" };
   }
 
   const existingSubmission = await SubmissionModel.findOne({

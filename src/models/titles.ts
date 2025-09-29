@@ -21,6 +21,9 @@ export class TitleClass {
 
   @prop({ required: true, type: Number })
   public period!: number;
+
+  @prop({ required: true, type: Boolean, default: false })
+  public is_taken!: boolean;
 }
 
 export const TitleModel = getModelForClass(TitleClass);

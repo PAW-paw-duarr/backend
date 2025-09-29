@@ -14,6 +14,7 @@ import {
   serviceGetSubmissionById,
   serviceResponseSubmission,
 } from "~/services/submissionService.js";
+import { CategoryCapstone } from "~/utils/constants.js";
 import {
   configData,
   createSubmissionPayload,
@@ -222,7 +223,7 @@ describe("SubmissionService", () => {
       expect(result.success).toBe(201);
       assert(result.success === 201);
       expect(result.data!.grand_design_url).toBe(createSubmissionPayload.grand_design_url);
-      expect(result.data!.accepted).toBeUndefined();
+      expect(result.data!.accepted).toBe(undefined);
 
       // Verify submission was actually saved to database
       const savedSubmission = await SubmissionModel.findById(result.data!.id);
@@ -289,6 +290,83 @@ describe("SubmissionService", () => {
 
       expect(result.error?.status).toBe(404);
       expect(result.data).toBe("Target team not found");
+    });
+
+    it("should return 400 when target team has no title", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
+
+      // Create a team without title
+      const teamWithoutTitle = await TeamModel.create({
+        _id: new mongoose.Types.ObjectId(),
+        name: "Team Without Title",
+        leader_email: "leader@noteam.com",
+        period: 1,
+        code: "ttt",
+        category: CategoryCapstone.Kesehatan,
+      });
+
+      const payload = {
+        ...createSubmissionPayload,
+        team_target_id: teamWithoutTitle._id.toString(),
+      };
+
+      const result = await serviceCreateASubmission(user!, payload);
+
+      expect(result.error?.status).toBe(400);
+      expect(result.data).toBe("Target team has no title");
+    });
+
+    it("should return 400 when target team's title is already taken", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
+
+      const title = await TitleModel.findById(titleData.previousPeriodTitle._id);
+      await TitleModel.findByIdAndUpdate(title!._id, { is_taken: true });
+
+      const teamWithTakenTitle = await TeamModel.create({
+        _id: new mongoose.Types.ObjectId(),
+        name: "Team With Taken Title",
+        leader_email: "leader@takentitle.com",
+        period: 1,
+        title: title!._id,
+        code: "ttt",
+        category: CategoryCapstone.Kesehatan,
+      });
+
+      const payload = {
+        ...createSubmissionPayload,
+        team_target_id: teamWithTakenTitle._id.toString(),
+      };
+
+      const result = await serviceCreateASubmission(user!, payload);
+
+      expect(result.error?.status).toBe(400);
+      expect(result.data).toBe("Target team's title is already taken");
+    });
+
+    it("should return 400 when target team is from current period (not previous)", async () => {
+      const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
+
+      // Create a team with current period
+      const currentConfig = await ConfigModel.findOne();
+      const teamCurrentPeriod = await TeamModel.create({
+        _id: new mongoose.Types.ObjectId(),
+        name: "Team Current Period",
+        leader_email: "leader@current.com",
+        period: currentConfig!.current_period,
+        title: titleData.previousPeriodTitle._id,
+        code: "ccc",
+        category: CategoryCapstone.Kesehatan,
+      });
+
+      const payload = {
+        ...createSubmissionPayload,
+        team_target_id: teamCurrentPeriod._id.toString(),
+      };
+
+      const result = await serviceCreateASubmission(user!, payload);
+
+      expect(result.error?.status).toBe(400);
+      expect(result.data).toBe("Cannot submit to current period");
     });
 
     it("should handle user without team", async () => {

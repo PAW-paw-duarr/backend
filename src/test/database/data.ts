@@ -30,6 +30,7 @@ export const titleData: Record<string, titleData> = {
     proposal_url: "https://example.com/proposals/5352e569-8ba9-4f6b-832f-24bc2922f002-.pdf",
     title: "title",
     period: configData.current_period,
+    is_taken: false,
   },
   previousPeriodTitle: {
     _id: new mongoose.Types.ObjectId("68cd31a4f937b6abf158f041"),
@@ -39,10 +40,11 @@ export const titleData: Record<string, titleData> = {
     proposal_url: "https://example.com/proposals/5352e569-8ba9-4f6b-832f-24bc2922f002-.pdf",
     title: "title2",
     period: configData.current_period - 1,
+    is_taken: false,
   },
 };
 
-export const createTitlePayload: Omit<titleData, "period" | "_id"> = {
+export const createTitlePayload: Omit<titleData, "period" | "_id" | "is_taken"> = {
   title: "New Title",
   desc: "New desc",
   description: "New description",
@@ -182,7 +184,7 @@ export const submissionData: Record<string, submissionData> = {
 };
 
 export const createSubmissionPayload = {
-  team_target_id: "68cd31179097773ac24c2b7d",
+  team_target_id: "68cd31179097773ac24c2b7b",
   grand_design_url: "https://example.com/submissions/new-design.pdf",
 };
 

@@ -72,7 +72,7 @@ export async function serviceGetTitleByID(
 // POST /titles
 export async function serviceCreateTitle(
   currentUser: UserClass,
-  payload: Omit<TitleClass, "id" | "period">,
+  payload: Omit<TitleClass, "id" | "period" | "is_taken">,
 ): retService<components["schemas"]["data-title"]> {
   // check if current user is team leader
   const currentTeam = await TeamModel.findById(currentUser.team?._id.toString());
@@ -93,6 +93,7 @@ export async function serviceCreateTitle(
     description: data.description,
     photo_url: data.photo_url,
     proposal_url: data.proposal_url,
+    is_taken: data.is_taken,
   };
 
   // assign the title to the team
