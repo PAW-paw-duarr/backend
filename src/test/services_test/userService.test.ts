@@ -1,3 +1,4 @@
+import argon2 from "argon2";
 import mongoose from "mongoose";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import type { components } from "~/lib/api/schema.js";
@@ -135,7 +136,7 @@ describe("UserService", () => {
       expect(result.data!.email).toBe(userData.teamLeaderWithTitle.email); // Should remain unchanged
     });
 
-    it("should update password field", async () => {
+    it("should update password field with hash", async () => {
       const user = await UserModel.findById(userData.teamLeaderWithTitle._id);
       const passwordUpdate = { password: "newPassword123" };
 
@@ -146,7 +147,11 @@ describe("UserService", () => {
 
       // Verify password was updated in database
       const updatedUser = await UserModel.findById(userData.teamLeaderWithTitle._id);
-      expect(updatedUser!.password).toBe("newPassword123");
+      assert(updatedUser !== null);
+      assert(updatedUser.password !== undefined);
+      expect(updatedUser.password).not.toBe("newPassword123");
+      const isPasswordValid = await argon2.verify(updatedUser.password, "newPassword123");
+      expect(isPasswordValid).toBe(true);
     });
 
     it("should handle empty update payload", async () => {
