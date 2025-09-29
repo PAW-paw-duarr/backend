@@ -1,3 +1,4 @@
+import argon2 from "argon2";
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
 import { deleteS3Keys, extractS3KeyFromUrl } from "~/lib/s3.js";
@@ -42,6 +43,10 @@ export async function serviceUpdateUser(
   if (currentUser.google_id) {
     delete payload.email;
     delete payload.password;
+  }
+
+  if (payload.password) {
+    payload.password = await argon2.hash(payload.password);
   }
 
   const data = await UserModel.findByIdAndUpdate(currentUser.id, payload, {
