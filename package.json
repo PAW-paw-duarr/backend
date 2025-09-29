@@ -21,9 +21,10 @@
     "google-auth-library": "^10.3.0",
     "mongoose": "^8.18.0",
     "multer": "^2.0.2",
-    "multer-s3": "^3.0.1",
     "pino": "^9.9.0",
     "pino-http": "^10.5.0",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.6.3",
     "zod": "^4.1.5"
   },
   "devDependencies": {
@@ -31,15 +32,12 @@
     "@types/express": "^5.0.3",
     "@types/express-session": "^1.18.2",
     "@types/multer": "^2.0.0",
-    "@types/multer-s3": "^3.0.3",
     "@types/node": "^22.8.6",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "mongodb-memory-server": "^10.2.1",
     "openapi-typescript": "^7.9.1",
-    "tsc-alias": "^1.8.16",
     "tsx": "^4.20.5",
-    "typescript": "^5.6.3",
     "vite": "^7.1.6",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
