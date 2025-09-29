@@ -1,6 +1,7 @@
 import express from "express";
 import { z } from "zod";
 import { createUserSession, destroyUserSession, oauth2Client } from "~/lib/auth.js";
+import { logger } from "~/lib/logger.js";
 import {
   serviceFindOrCreateGoogleUser,
   serviceSigninPassword,
@@ -36,7 +37,9 @@ router.post("/signin/password", async (req, res) => {
 
     createUserSession({ req, res, user: resp.data });
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -74,7 +77,9 @@ router.post("/signup/password", async (req, res) => {
     }
     res.status(resp.success).json(resp.data);
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -109,7 +114,9 @@ router.get("/google/callback", async (req, res) => {
 
     createUserSession({ req, res, user: resp.data, redirectTo: "/" });
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }

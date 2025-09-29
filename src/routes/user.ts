@@ -3,6 +3,7 @@ import path from "node:path";
 import express from "express";
 import z from "zod";
 import { safeUnlink } from "~/lib/file.js";
+import { logger } from "~/lib/logger.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import {
@@ -50,7 +51,9 @@ router.get("/me", async (_, res) => {
 
     res.status(service.success).json(service.data);
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -68,7 +71,9 @@ router.get("/:id", async (req, res) => {
 
     res.status(service.success).json(service.data);
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -182,7 +187,9 @@ router.delete("/:id", async (req, res) => {
 
     res.status(service.success).send();
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }

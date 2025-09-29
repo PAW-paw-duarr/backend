@@ -2,6 +2,7 @@ import path from "node:path";
 import { Router } from "express";
 import z from "zod";
 import { safeUnlink } from "~/lib/file.js";
+import { logger } from "~/lib/logger.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import type { TitleClass } from "~/models/titles.js";
@@ -35,7 +36,9 @@ router.get("/", async (_, res) => {
 
     res.status(service.success).json(service.data);
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -57,7 +60,9 @@ router.get("/:id", async (req, res) => {
     }
 
     res.status(service.success).json(service.data);
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -80,6 +85,12 @@ router.post("/", uploadCreateTitle, async (req, res) => {
   const files = req.files as Record<string, Express.Multer.File[]>;
   const proposalFile = files?.proposal_file?.[0];
   const photoFile = files?.photo_file?.[0];
+
+  if (!proposalFile || !photoFile) {
+    await safeUnlink(proposalFile?.path, photoFile?.path);
+    sendHttpError({ res, error: httpBadRequestError, message: "Missing files" });
+    return;
+  }
 
   const parseResult = createTitleSchema.safeParse({
     title,
@@ -252,7 +263,9 @@ router.delete("/:id", async (req, res) => {
       return;
     }
     res.status(service.success).send();
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }

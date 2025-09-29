@@ -2,6 +2,7 @@ import path from "node:path";
 import express from "express";
 import z from "zod";
 import { safeUnlink } from "~/lib/file.js";
+import { logger } from "~/lib/logger.js";
 import { uploadTmp } from "~/lib/multer.js";
 import { deleteS3Keys, publicUrlFromKey, putFromDisk } from "~/lib/s3.js";
 import {
@@ -31,7 +32,9 @@ router.get("/", async (_, res) => {
 
     res.json(submissions.data);
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -51,7 +54,9 @@ router.get("/:id", async (req, res) => {
     }
 
     res.status(service.success).json(service.data);
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -66,15 +71,15 @@ router.post("/submit", uploadGrandDesign, async (req, res) => {
   const files = req.files as Record<string, Express.Multer.File[]>;
   const grandDesign = files?.grand_design?.[0];
 
-  const parseReqBody = submitSchema.safeParse({ team_target_id });
-  if (!parseReqBody.success) {
-    await safeUnlink(grandDesign?.path);
-    res.status(400).json({ error: "Invalid request", details: z.treeifyError(parseReqBody.error) });
+  if (!grandDesign) {
+    sendHttpError({ res, error: httpBadRequestError, message: "Missing grand design file" });
     return;
   }
 
-  if (!grandDesign) {
-    res.status(400).json({ error: "No file uploaded" });
+  const parseReqBody = submitSchema.safeParse({ team_target_id });
+  if (!parseReqBody.success) {
+    await safeUnlink(grandDesign?.path);
+    sendHttpError({ res, error: httpBadRequestError, detail: z.treeifyError(parseReqBody.error) });
     return;
   }
 
@@ -141,7 +146,9 @@ router.post("/response", async (req, res) => {
     }
 
     res.status(service.success).json(service.data);
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -168,7 +175,9 @@ router.delete("/:id", async (req, res) => {
     }
 
     res.status(service.success).json(service.data);
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
