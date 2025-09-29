@@ -1,5 +1,6 @@
 import express from "express";
 import z from "zod";
+import { logger } from "~/lib/logger.js";
 import {
   serviceAdminCreateTeams,
   serviceAdminDeleteTeamById,
@@ -39,7 +40,9 @@ router.get("/", async (_, res) => {
     }
 
     res.status(service.success).json(service.data);
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -58,7 +61,9 @@ router.get("/:id", async (req, res) => {
     }
 
     res.status(service.success).json(service.data);
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -86,7 +91,9 @@ router.post("/join", async (req, res) => {
 
     res.status(service.success).json(service.data);
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -105,7 +112,9 @@ router.delete("/kick/:id", async (req, res) => {
 
     res.status(service.success).send();
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -147,7 +156,9 @@ router.post("/new", async (req, res) => {
     );
 
     res.status(service.success).json(service.data);
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -176,7 +187,9 @@ router.delete("/:id", async (req, res) => {
 
     res.status(service.success).send();
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
