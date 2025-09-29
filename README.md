@@ -22,11 +22,12 @@
   * Log/Audit saat approve & unduh
   * Role check (owner/dosen/admin)
 * **Models** `src/services` - Akses database & relasi:
-  *`users`, `teams`, `titles`, `submissions`
+  * `users`, `teams`, `titles`, `submissions`
   * Transaksi data.
   Menyimpan jejak audit.
 
 ## 📂File Directory
+```
 PAW-paw-duarr/
 ├─ backend/
 │  ├─ .husky/
@@ -50,6 +51,7 @@ PAW-paw-duarr/
 │  ├─ package-lock.json
 │  ├─ README.md
 └── tsconfig.json
+```
 
 ## 🛠️Tech Stack
 <img src="https://img.shields.io/badge/Express%20js-000000?style=for-the-badge&logo=express&logoColor=white" align="center"/> <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" align="center"/> <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" align="center"/> 
