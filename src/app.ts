@@ -9,20 +9,27 @@ import teamRouter from "~/routes/team.js";
 import titleRouter from "~/routes/title.js";
 import userRouter from "~/routes/user.js";
 import { httpInternalServerError, httpNotFoundError, sendHttpError } from "~/utils/httpError.js";
+import { isFrontendExist } from "./utils/frontend.js";
 
 const app = express();
+const frontend = isFrontendExist();
 
 // Global middleware
 app.use(httpLogger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(sessionMiddleware);
+if (frontend.exist) {
+  app.use(express.static(frontend.clientPath));
+}
+
+// Public routes
+app.use("/", indexRouter);
 
 // API routes
 const apiRouter = express.Router();
 
 // Public API routes
-apiRouter.use("/", indexRouter);
 apiRouter.use("/auth", authRouter);
 
 // Protected API routes
