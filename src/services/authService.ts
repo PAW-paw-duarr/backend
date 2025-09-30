@@ -20,14 +20,14 @@ export async function serviceSigninPassword(
 ): retService<components["schemas"]["data-user"]> {
   const data = await UserModel.findOne({ email: params.email });
   if (!data || data.password === undefined) {
-    logger.info(`User/ password not found: ${params.email}`);
+    logger.info({ email: params.email }, `User/ password not found`);
     return { error: httpBadRequestError, data: "Invalid email or password" };
   }
 
   // verify password
   const isValid = data.password ? await argon2.verify(data.password, params.password) : false;
   if (!isValid) {
-    logger.info(`Invalid password for: ${params.email}`);
+    logger.info({ email: params.email }, `Invalid password`);
     return { error: httpUnauthorizedError, data: "Invalid email or password" };
   }
 
@@ -46,10 +46,12 @@ export async function serviceSignupPassword(
   params: createUserPasswordParams,
 ): retService<components["schemas"]["data-user"]> {
   params.password = await argon2.hash(params.password);
+
   const data = await UserModel.createUserPassword(params);
   if (data instanceof Error) {
     return { error: httpBadRequestError, data: data.message };
   }
+  logger.info({ email: params.email }, `User password created`);
 
   const user: components["schemas"]["data-user"] = {
     id: data.id,

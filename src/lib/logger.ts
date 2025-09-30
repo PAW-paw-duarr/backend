@@ -32,5 +32,13 @@ export const httpLogger = httpPino.default({
       statusCode: res.statusCode,
     }),
   },
+  formatters: {
+    level: (label) => {
+      return { level: label.toUpperCase() };
+    },
+    bindings: () => {
+      return {};
+    },
+  },
   base: {},
 });

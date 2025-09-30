@@ -45,7 +45,7 @@ export class SubmissionsClass {
   public static async updateAcceptedLimited(
     this: ReturnModelType<typeof SubmissionsClass>,
     id: string,
-    currentTeamId: string,
+    currentTeamId: mongoose.Types.ObjectId,
     accept: boolean,
   ) {
     return this.findOneAndUpdate(

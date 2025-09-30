@@ -39,7 +39,7 @@ router.post("/signin/password", async (req, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error signing in with password");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -79,7 +79,7 @@ router.post("/signup/password", async (req, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error signing up with password");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -116,7 +116,7 @@ router.get("/google/callback", async (req, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error signing in with Google");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }

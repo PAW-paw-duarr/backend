@@ -1,6 +1,7 @@
 import { isDocument } from "@typegoose/typegoose";
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
+import { logger } from "~/lib/logger.js";
 import { deleteS3Keys, extractS3KeyFromUrl } from "~/lib/s3.js";
 import { ConfigModel } from "~/models/config.js";
 import { SubmissionModel } from "~/models/submissions.js";
@@ -76,22 +77,24 @@ export async function serviceResponseSubmission(
     return { error: httpBadRequestError, data: "Invalid submission ID" };
   }
 
-  const currentTeam = await TeamModel.findOne(
-    { _id: currentUser.team?._id },
-    { id: 1, leader_email: 1 },
-  );
+  const currentTeam = await TeamModel.findById(currentUser.team?._id);
   if (currentUser.email !== currentTeam?.leader_email) {
     return { error: httpUnauthorizedError, data: "Only team leader can respond to submissions" };
   }
 
-  const data = await SubmissionModel.updateAcceptedLimited(
-    id,
-    currentTeam?._id.toString() || "",
-    accept,
-  );
+  await currentTeam.populate("title");
+  if (isDocument(currentTeam.title) && currentTeam.title.is_taken) {
+    return { error: httpBadRequestError, data: "Your team's title is already taken" };
+  }
+
+  const data = await SubmissionModel.updateAcceptedLimited(id, currentTeam?._id, accept);
   if (!data) {
     return { error: httpNotFoundError, data: "Submission not found" };
   }
+  logger.info(
+    { submission_id: id, team_id: currentTeam._id.toString(), accept },
+    "Submission response updated",
+  );
 
   const submission: components["schemas"]["data-submission"] = {
     id: data.id,
@@ -172,6 +175,10 @@ export async function serviceCreateASubmission(
   if (!data) {
     return { error: httpInternalServerError, data: "Failed to create a new submission" };
   }
+  logger.info(
+    { team_id: currentTeam._id.toString(), target_team_id: payload.team_target_id },
+    "New submission created",
+  );
 
   const submission: components["schemas"]["data-submission"] = {
     id: data.id,
@@ -237,6 +244,7 @@ export async function serviceAdminDeleteSubmissionById(id: string): retService<u
   if (!data) {
     return { error: httpNotFoundError, data: "Submission not found" };
   }
+  logger.info({ submission_id: id }, "Submission deleted by admin");
 
   if (data.grand_design_url) {
     await deleteS3Keys(extractS3KeyFromUrl(data.grand_design_url) || "");

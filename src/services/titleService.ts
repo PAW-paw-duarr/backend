@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
+import { logger } from "~/lib/logger.js";
 import { deleteS3Keys, extractS3KeyFromUrl } from "~/lib/s3.js";
 import { ConfigModel } from "~/models/config.js";
 import { SubmissionModel } from "~/models/submissions.js";
@@ -86,6 +87,11 @@ export async function serviceCreateTitle(
   }
 
   const data = await TitleModel.create({ period: currentTeam.period, ...payload });
+  logger.info(
+    { team_id: currentTeam?._id.toString(), title_id: data._id.toString() },
+    "Title created",
+  );
+
   const title: components["schemas"]["data-title"] = {
     id: data.id,
     title: data.title,
@@ -116,12 +122,6 @@ export async function serviceUpdateTitle(
     return { error: httpUnauthorizedError, data: "Only team leader can update title" };
   }
 
-  const titleId = currentTeam.title._id.toString();
-  const data = await TitleModel.findById(titleId);
-  if (!data) {
-    return { error: httpNotFoundError, data: "Title not found" };
-  }
-
   //check if has already submission to this title
   const hasSubmission = await SubmissionModel.findOne({
     team_target: currentTeam._id,
@@ -131,13 +131,14 @@ export async function serviceUpdateTitle(
   }
 
   // update the title and get the updated document
-  const updatedData = await TitleModel.findByIdAndUpdate(titleId, payload, {
+  const updatedData = await TitleModel.findByIdAndUpdate(currentTeam.title._id, payload, {
     new: true,
     runValidators: true,
   });
   if (!updatedData) {
-    return { error: httpNotFoundError, data: "Title not found after update" };
+    return { error: httpNotFoundError, data: "Title not found" };
   }
+  logger.info({ title_id: currentTeam.title._id.toString() }, "Title updated");
 
   const title: components["schemas"]["data-title"] = {
     id: updatedData.id,
@@ -181,6 +182,7 @@ export async function serviceAdminDeleteTitleByID(title_id: string): retService<
   // remove the title from the team
   await TeamModel.updateMany({ title: title_id }, { $unset: { title: "" } });
 
+  logger.info({ title_id }, "Title deleted by admin");
   return { success: 204 };
 }
 

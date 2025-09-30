@@ -1,6 +1,7 @@
 import nodeCrypto from "node:crypto";
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
+import { logger } from "~/lib/logger.js";
 import { ConfigModel } from "~/models/config.js";
 import { TeamModel } from "~/models/teams.js";
 import { type UserClass, UserModel } from "~/models/users.js";
@@ -78,6 +79,7 @@ export async function serviceKickMemberTeam(userId: string, currentUser: UserCla
   if (!data) {
     return { error: httpNotFoundError, data: "Member Not Found" };
   }
+  logger.info({ user_id: userId, team_id: currentTeam?._id.toString() }, "Member kicked from team");
 
   return { success: 204 };
 }
@@ -109,6 +111,7 @@ export async function serviceJoinTeam(
     period: team.period,
     code: team.code,
   };
+  logger.info({ user_id: currentUser.id, team_id: team._id.toString() }, "User joined team");
 
   return { success: 200, data: formattedTeam };
 }
@@ -124,6 +127,7 @@ export async function serviceAdminDeleteTeamById(team_id: string): retService<un
   if (!data) {
     return { error: httpNotFoundError, data: "Team not found" };
   }
+  logger.info({ team_id: data.id }, "Team deleted by admin");
 
   await data.deleteOne();
   await UserModel.updateMany({ team: team_id }, { $unset: { team: "" } });
@@ -198,6 +202,7 @@ export async function serviceAdminCreateTeams(
       successfulTeams.push(formattedTeam);
       successCount++;
     } catch (error) {
+      logger.error(error, `Error creating team: ${team.name}`);
       errorData.push({
         name: team.name,
         leader_email: team.leader_email,

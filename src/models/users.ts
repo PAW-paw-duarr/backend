@@ -5,6 +5,7 @@ import {
   type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
+import { logger } from "~/lib/logger.js";
 import { TeamsClass } from "./teams.js";
 
 @modelOptions({ schemaOptions: { collection: "users" } })
@@ -61,6 +62,7 @@ export class UserClass {
     }
     const user = new this({ name, email, google_id });
     await user.save();
+    logger.info({ email: params.email }, `User google created`);
     return user;
   }
 }

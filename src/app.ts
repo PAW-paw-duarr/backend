@@ -1,6 +1,6 @@
-import express from "express";
+import express, { type ErrorRequestHandler, type Request, type Response } from "express";
 import { authMiddleware, sessionMiddleware } from "~/lib/auth.js";
-import { httpLogger } from "~/lib/logger.js";
+import { httpLogger, logger } from "~/lib/logger.js";
 import authRouter from "~/routes/auth.js";
 import fileRouter from "~/routes/file.js";
 import indexRouter from "~/routes/index.js";
@@ -55,8 +55,10 @@ app.use((_, res) => {
 });
 
 // error handler
-app.use((_, res) => {
+function errorRequestHandler(err: ErrorRequestHandler, _: Request, res: Response) {
+  logger.error(err, "Unexpected error occurred");
   return sendHttpError({ res, error: httpInternalServerError });
-});
+}
+app.use(errorRequestHandler);
 
 export default app;

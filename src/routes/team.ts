@@ -42,7 +42,7 @@ router.get("/", async (_, res) => {
     res.status(service.success).json(service.data);
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error getting all teams");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -63,7 +63,7 @@ router.get("/:id", async (req, res) => {
     res.status(service.success).json(service.data);
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error getting team by ID");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -93,7 +93,7 @@ router.post("/join", async (req, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error joining team");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -114,7 +114,7 @@ router.delete("/kick/:id", async (req, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error kicking member from team");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -158,7 +158,7 @@ router.post("/new", async (req, res) => {
     res.status(service.success).json(service.data);
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error creating new teams");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -189,7 +189,7 @@ router.delete("/:id", async (req, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error deleting team by ID");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }

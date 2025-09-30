@@ -34,7 +34,7 @@ router.get("/", async (_, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error getting all submissions");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -56,7 +56,7 @@ router.get("/:id", async (req, res) => {
     res.status(service.success).json(service.data);
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error getting submission by ID");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -114,8 +114,11 @@ router.post("/submit", uploadGrandDesign, async (req, res) => {
     }
 
     res.status(service.success).json(service.data);
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err, "Error creating submission");
     await safeUnlink(grandDesign.path);
+    await deleteS3Keys(grandDesignKey);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -148,7 +151,7 @@ router.post("/response", async (req, res) => {
     res.status(service.success).json(service.data);
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error responding to submission");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -177,7 +180,7 @@ router.delete("/:id", async (req, res) => {
     res.status(service.success).json(service.data);
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error deleting submission");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
