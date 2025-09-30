@@ -96,6 +96,7 @@ backend/
 
 ## Report URL
 
-https://drive.google.com/file/d/1XwbU2qcR4O62CFxTHtww1UtNzbgPLODV/view?usp=sharing
+https://drive.google.com/file/d/1XwbU2qcR4O62CFxTHtww1UtNzbgPLODV/view
+
 
 
