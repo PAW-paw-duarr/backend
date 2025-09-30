@@ -1,3 +1,4 @@
+import MongoStore from "connect-mongo";
 import type { NextFunction, Request, Response } from "express";
 import session from "express-session";
 import { OAuth2Client } from "google-auth-library";
@@ -10,13 +11,12 @@ import {
 } from "~/utils/httpError.js";
 import type { components } from "./api/schema.js";
 
-const store = new session.MemoryStore();
 export const sessionMiddleware = session({
   name: "sess",
   secret: env.SECRET_KEY,
   resave: false,
   saveUninitialized: false,
-  store,
+  store: MongoStore.create({ mongoUrl: env.MONGO_URL }),
   cookie: {
     httpOnly: true,
     domain: env.URL.hostname,

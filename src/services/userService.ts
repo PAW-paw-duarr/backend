@@ -1,6 +1,7 @@
 import argon2 from "argon2";
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
+import { logger } from "~/lib/logger.js";
 import { deleteS3Keys, extractS3KeyFromUrl } from "~/lib/s3.js";
 import { type UserClass, UserModel } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
@@ -56,6 +57,7 @@ export async function serviceUpdateUser(
   if (!data) {
     return { error: httpNotFoundError, data: "User not found" };
   }
+  logger.info({ user_id: currentUser.id }, "User updated");
 
   const user: components["schemas"]["data-user"] = {
     id: data.id,
@@ -87,6 +89,7 @@ export async function serviceDeleteUserById(user_id: string): retService<undefin
     await deleteS3Keys(extractS3KeyFromUrl(data.cv_url) || "");
   }
 
+  logger.info({ user_id: data.id }, "User deleted by admin");
   return { success: 204 };
 }
 

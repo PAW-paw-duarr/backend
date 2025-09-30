@@ -33,7 +33,7 @@ router.get("/{*any}", async (req, res) => {
     if (err.name === "NoSuchKey") {
       sendHttpError({ res, error: httpNotFoundError, message: "File not found" });
     } else {
-      logger.error(err);
+      logger.error(err, "Error getting file from S3");
       sendHttpError({ res, error: httpInternalServerError });
     }
     return;

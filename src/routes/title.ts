@@ -38,7 +38,7 @@ router.get("/", async (_, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error getting all titles");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -62,7 +62,7 @@ router.get("/:id", async (req, res) => {
     res.status(service.success).json(service.data);
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error getting title by ID");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -141,8 +141,11 @@ router.post("/", uploadCreateTitle, async (req, res) => {
 
     res.status(service.success).json(service.data);
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err, "Error creating title");
     await safeUnlink(proposalFile?.path, photoFile?.path);
+    await deleteS3Keys(proposalKey, photoKey);
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -240,7 +243,9 @@ router.patch("/", uploadUpdateTitle, async (req, res) => {
 
     res.status(service.success).json(service.data);
     return;
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    logger.error(err, "Error updating title");
     await safeUnlink(proposalFile.path, photoFile.path);
     sendHttpError({ res, error: httpInternalServerError });
     return;
@@ -265,7 +270,7 @@ router.delete("/:id", async (req, res) => {
     res.status(service.success).send();
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error deleting title by ID");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }

@@ -53,7 +53,7 @@ router.get("/me", async (_, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error getting current user");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -73,7 +73,7 @@ router.get("/:id", async (req, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error getting user by ID");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
@@ -147,7 +147,9 @@ router.patch("/", uploadCvFile, async (req, res) => {
 
       res.status(service.success).json(service.data);
       return;
-    } catch {
+    } catch (error) {
+      const err = error as Error;
+      logger.error(err, "Error updating user with CV");
       await safeUnlink(cvFile.path);
       sendHttpError({ res, error: httpInternalServerError });
       return;
@@ -189,7 +191,7 @@ router.delete("/:id", async (req, res) => {
     return;
   } catch (error) {
     const err = error as Error;
-    logger.error(err);
+    logger.error(err, "Error deleting user by ID");
     sendHttpError({ res, error: httpInternalServerError });
     return;
   }
