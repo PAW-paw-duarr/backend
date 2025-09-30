@@ -92,12 +92,9 @@ backend/
 
 ## Tech Stack
 
-<img src="https://img.shields.io/badge/-TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white"/>
-<img src="https://img.shields.io/badge/-Express-000000?style=for-the-badge&logo=express&logoColor=white"/>
-<img src="https://img.shields.io/badge/-MinIO-C72E49?style=for-the-badge&logo=minio&logoColor=white"/>
-<img src="https://img.shields.io/badge/-MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white"/>
-<img src="https://img.shields.io/badge/-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
+<img src="https://img.shields.io/badge/-TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white"/> <img src="https://img.shields.io/badge/-Express-000000?style=for-the-badge&logo=express&logoColor=white"/> <img src="https://img.shields.io/badge/-MinIO-C72E49?style=for-the-badge&logo=minio&logoColor=white"/> <img src="https://img.shields.io/badge/-MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white"/> <img src="https://img.shields.io/badge/-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
 
 ## Report URL
 
 [https://drive.google.com/drive/folders/1zJP95_f-4snHbYVY5AKdkhTLSKwYjc6Z](https://drive.google.com/drive/folders/1zJP95_f-4snHbYVY5AKdkhTLSKwYjc6Z)
+
