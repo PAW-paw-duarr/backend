@@ -85,7 +85,7 @@ router.post("/signup/password", async (req, res) => {
   }
 });
 
-router.get("/signout", (req, res) => {
+router.post("/signout", (req, res) => {
   destroyUserSession({ req, res });
   return;
 });
