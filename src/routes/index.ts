@@ -1,5 +1,6 @@
 import express from "express";
 import { isFrontendExist } from "~/utils/frontend.js";
+import { httpNotFoundError, sendHttpError } from "~/utils/httpError.js";
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ if (frontend.exist) {
   });
 } else {
   router.get("/{*any}", (_, res) => {
-    res.send("Hello world!");
+    sendHttpError({ res, error: httpNotFoundError, message: "Not Found" });
   });
 }
 

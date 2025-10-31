@@ -23,9 +23,6 @@ if (frontend.exist) {
   app.use(express.static(frontend.clientPath));
 }
 
-// Public routes
-app.use("/", indexRouter);
-
 // API routes
 const apiRouter = express.Router();
 
@@ -48,6 +45,9 @@ const fileRoutes = express.Router();
 fileRoutes.use(authMiddleware);
 fileRoutes.use("/", fileRouter);
 app.use("/file", fileRoutes);
+
+// Public routes
+app.use("/", indexRouter);
 
 // catch 404 and forward to error handler
 app.use((_, res) => {
