@@ -2,6 +2,7 @@ import express, { type ErrorRequestHandler, type Request, type Response } from "
 import { authMiddleware, sessionMiddleware } from "~/lib/auth.js";
 import { httpLogger, logger } from "~/lib/logger.js";
 import authRouter from "~/routes/auth.js";
+import configRouter from "~/routes/config.js";
 import fileRouter from "~/routes/file.js";
 import indexRouter from "~/routes/index.js";
 import submissionRouter from "~/routes/submission.js";
@@ -36,6 +37,7 @@ protectedApiRouter.use("/title", titleRouter);
 protectedApiRouter.use("/submission", submissionRouter);
 protectedApiRouter.use("/team", teamRouter);
 protectedApiRouter.use("/user", userRouter);
+protectedApiRouter.use("/config", configRouter);
 
 apiRouter.use("/", protectedApiRouter);
 app.use("/api", apiRouter);
