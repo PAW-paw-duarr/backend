@@ -81,7 +81,6 @@ router.get("/:id", async (req, res) => {
 
 export const updateUserSchema = z.object({
   name: z.string().optional(),
-  email: z.email().optional(),
   password: z
     .string()
     .min(8)

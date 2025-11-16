@@ -31,6 +31,7 @@ export async function serviceGetTeamById(
     memberData.push({
       id: m.id,
       name: m.name,
+      email: m.email,
     });
   });
 

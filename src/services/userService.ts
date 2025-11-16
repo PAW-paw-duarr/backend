@@ -105,6 +105,7 @@ export async function serviceAdminGetAllUsers(): retService<
     (item): components["schemas"]["data-user-short"] => ({
       id: item.id,
       name: item.name,
+      email: item.email,
     }),
   );
 

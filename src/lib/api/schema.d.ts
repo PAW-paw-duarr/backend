@@ -421,12 +421,6 @@ export interface components {
       code?: string;
       member?: components["schemas"]["data-user-short"][];
     };
-    "data-team-short": {
-      id: string;
-      name: string;
-      category: components["schemas"]["CategoryCapstone"];
-      period: number;
-    };
     "data-team-new": {
       name: string;
       leader_email: string;
@@ -455,6 +449,7 @@ export interface components {
     "data-user-short": {
       id: string;
       name: string;
+      email: string;
     };
     "data-submission": {
       id: string;
@@ -493,6 +488,12 @@ export interface components {
       password: string;
       name: string;
     };
+    /** @enum {string} */
+    CategoryCapstone:
+      | "Kesehatan"
+      | "Pengelolaan Sampah"
+      | "Smart City"
+      | "Transportasi Ramah Lingkungan";
     DefaultErrors: {
       status: number;
       error?: string;
@@ -501,12 +502,6 @@ export interface components {
         [key: string]: unknown;
       };
     };
-    /** @enum {string} */
-    CategoryCapstone:
-      | "Kesehatan"
-      | "Pengelolaan Sampah"
-      | "Smart City"
-      | "Transportasi Ramah Lingkungan";
   };
   responses: never;
   parameters: never;

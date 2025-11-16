@@ -269,7 +269,7 @@ describe("UserService", () => {
       const firstUser = result.data![0];
       expect(firstUser).toHaveProperty("id");
       expect(firstUser).toHaveProperty("name");
-      expect(firstUser).not.toHaveProperty("email");
+      expect(firstUser).toHaveProperty("email");
       expect(firstUser).not.toHaveProperty("password");
       expect(firstUser).not.toHaveProperty("cv_url");
       expect(firstUser).not.toHaveProperty("google_id");
