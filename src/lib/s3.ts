@@ -18,7 +18,7 @@ export const s3 = new S3Client({
 });
 
 export function publicUrlFromKey(key: string): string {
-  return `${env.DOMAIN}/file/${key}`;
+  return `/file/${key}`;
 }
 
 export async function putFromDisk(localPath: string, key: string, contentType?: string) {
