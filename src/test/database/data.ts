@@ -31,6 +31,7 @@ export const titleData: Record<string, titleData> = {
     title: "title",
     period: configData.current_period,
     is_taken: false,
+    team: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7a"),
   },
   previousPeriodTitle: {
     _id: new mongoose.Types.ObjectId("68cd31a4f937b6abf158f041"),
@@ -41,10 +42,11 @@ export const titleData: Record<string, titleData> = {
     title: "title2",
     period: configData.current_period - 1,
     is_taken: false,
+    team: new mongoose.Types.ObjectId("68cd31179097773ac24c2b7b"),
   },
 };
 
-export const createTitlePayload: Omit<titleData, "period" | "_id" | "is_taken"> = {
+export const createTitlePayload: Omit<titleData, "period" | "_id" | "is_taken" | "team"> = {
   title: "New Title",
   desc: "New desc",
   description: "New description",

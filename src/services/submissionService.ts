@@ -3,9 +3,9 @@ import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
 import { logger } from "~/lib/logger.js";
 import { deleteS3Keys, extractS3KeyFromUrl } from "~/lib/s3.js";
+import { TeamModel } from "~/models/class.js";
 import { ConfigModel } from "~/models/config.js";
 import { SubmissionModel } from "~/models/submissions.js";
-import { TeamModel } from "~/models/teams.js";
 import type { UserClass } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
 import {
@@ -62,7 +62,7 @@ export async function serviceGetSubmissionById(
     team_id: data.team._id.toString(),
     grand_design_url: data.grand_design_url,
     team_target_id: data.team_target._id.toString(),
-    accepted: data.accepted,
+    accepted: data.accepted || false,
   };
 
   return { success: 200, data: submissionData };
@@ -101,7 +101,7 @@ export async function serviceResponseSubmission(
     team_id: data.team._id.toString(),
     grand_design_url: data.grand_design_url,
     team_target_id: data.team_target._id.toString(),
-    accepted: data.accepted,
+    accepted: data.accepted || false,
   };
 
   return { success: 200, data: submission };
@@ -185,7 +185,7 @@ export async function serviceCreateASubmission(
     team_id: data.team._id.toString(),
     grand_design_url: data.grand_design_url,
     team_target_id: data.team_target._id.toString(),
-    accepted: data.accepted,
+    accepted: data.accepted || false,
   };
 
   return { success: 201, data: submission };
@@ -229,7 +229,7 @@ export async function serviceAdminGetSubmissionById(
     team_id: data.team._id.toString(),
     grand_design_url: data.grand_design_url,
     team_target_id: data.team_target._id.toString(),
-    accepted: data.accepted,
+    accepted: data.accepted || false,
   };
 
   return { success: 200, data: submissionData };

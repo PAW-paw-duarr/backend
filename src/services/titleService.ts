@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
 import { logger } from "~/lib/logger.js";
 import { deleteS3Keys, extractS3KeyFromUrl } from "~/lib/s3.js";
+import { TeamModel, TitleModel } from "~/models/class.js";
 import { ConfigModel } from "~/models/config.js";
 import { SubmissionModel } from "~/models/submissions.js";
-import { TeamModel } from "~/models/teams.js";
-import { type TitleClass, TitleModel } from "~/models/titles.js";
+import type { TitleClass } from "~/models/titles.js";
 import type { UserClass } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
 import {
@@ -63,6 +63,8 @@ export async function serviceGetTitleByID(
     desc: data.desc,
     description: data.description,
     photo_url: data.photo_url,
+    is_taken: data.is_taken,
+    team_id: titleOwnerTeam ? titleOwnerTeam.id : undefined,
     ...(allowGetProposal && {
       proposal_url: data.proposal_url,
     }),
@@ -73,7 +75,7 @@ export async function serviceGetTitleByID(
 // POST /titles
 export async function serviceCreateTitle(
   currentUser: UserClass,
-  payload: Omit<TitleClass, "id" | "period" | "is_taken">,
+  payload: Omit<TitleClass, "id" | "period" | "is_taken" | "team">,
 ): retService<components["schemas"]["data-title"]> {
   // check if current user is team leader
   const currentTeam = await TeamModel.findById(currentUser.team?._id.toString());
@@ -86,7 +88,11 @@ export async function serviceCreateTitle(
     return { error: httpBadRequestError, data: "Team already has a title" };
   }
 
-  const data = await TitleModel.create({ period: currentTeam.period, ...payload });
+  const data = await TitleModel.create({
+    period: currentTeam.period,
+    ...payload,
+    team: currentTeam._id,
+  });
   logger.info(
     { team_id: currentTeam?._id.toString(), title_id: data._id.toString() },
     "Title created",
@@ -100,6 +106,7 @@ export async function serviceCreateTitle(
     photo_url: data.photo_url,
     proposal_url: data.proposal_url,
     is_taken: data.is_taken,
+    team_id: currentTeam?._id.toString(),
   };
 
   // assign the title to the team
@@ -147,6 +154,8 @@ export async function serviceUpdateTitle(
     description: updatedData.description,
     photo_url: updatedData.photo_url,
     proposal_url: updatedData.proposal_url,
+    team_id: currentTeam._id.toString(),
+    is_taken: updatedData.is_taken,
   };
 
   return { success: 200, data: title };
@@ -205,6 +214,8 @@ export async function serviceAdminGetTitleByID(
     description: data.description,
     photo_url: data.photo_url,
     proposal_url: data.proposal_url,
+    is_taken: data.is_taken,
+    team_id: (await TeamModel.findOne({ title: data.id }))?.id,
   };
   return { success: 200, data: titles };
 }

@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
 import { afterEach, assert, beforeEach, describe, expect, it } from "vitest";
 import type { components } from "~/lib/api/schema.js";
+import { TeamModel, TitleModel } from "~/models/class.js";
 import { ConfigModel } from "~/models/config.js";
 import { SubmissionModel } from "~/models/submissions.js";
-import { TeamModel } from "~/models/teams.js";
-import { TitleModel } from "~/models/titles.js";
 import { UserModel } from "~/models/users.js";
 import {
   serviceAdminDeleteTitleByID,
@@ -62,7 +61,7 @@ describe("TitleService", () => {
       expect(data).toHaveLength(lengthTitlePrevPeriod);
 
       const expectedTitle: components["schemas"]["data-title-short"] = {
-        id: titleData.previousPeriodTitle._id?.toString(),
+        id: titleData.previousPeriodTitle._id?.toString() || "",
         title: titleData.previousPeriodTitle.title,
         desc: titleData.previousPeriodTitle.desc,
         photo_url: titleData.previousPeriodTitle.photo_url,
@@ -198,6 +197,7 @@ describe("TitleService", () => {
         id: result.data.id,
         is_taken: result.data.is_taken,
         ...createTitlePayload,
+        team_id: user!.team?._id.toString(),
       });
 
       const savedTitle = await TitleModel.findById(result.data.id);

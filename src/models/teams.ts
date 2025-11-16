@@ -1,4 +1,4 @@
-import { getModelForClass, modelOptions, prop, type Ref } from "@typegoose/typegoose";
+import { modelOptions, prop, type Ref } from "@typegoose/typegoose";
 import { CategoryCapstone } from "~/utils/constants.js";
 import { TitleClass } from "./titles.js";
 
@@ -24,5 +24,3 @@ export class TeamsClass {
   @prop({ required: true, type: String })
   public code!: string;
 }
-
-export const TeamModel = getModelForClass(TeamsClass);

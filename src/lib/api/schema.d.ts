@@ -54,7 +54,6 @@ export interface paths {
      * Delete a Title
      * @description Permanently deletes a specific capstone title
      *     Nonadmin : cannot use this
-     *
      */
     delete: operations["del-api-title-id"];
     options?: never;
@@ -123,7 +122,6 @@ export interface paths {
     /**
      * Submit a Proposal for a Title
      * @description Allows captain team to submit their project proposal for a chosen title
-     *
      */
     post: operations["post-api-submission-submit"];
     delete?: never;
@@ -311,26 +309,6 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /**
-     * Update My User Profil
-     * @description  Updates the profile information for the authenticated user
-     */
-    patch: operations["patch-api-user"];
-    trace?: never;
-  };
-  "/user/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * List All Users
      * @description Retrieves a list of all users
@@ -342,7 +320,11 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    patch?: never;
+    /**
+     * Update My User Profil
+     * @description Updates the profile information for the authenticated user
+     */
+    patch: operations["patch-api-user"];
     trace?: never;
   };
   "/auth/signin/password": {
@@ -392,13 +374,13 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    get?: never;
+    put?: never;
     /**
      * Sign Out
      * @description Logs out the currently authenticated user and invalidates their session token
      */
-    get: operations["get-auth-signout"];
-    put?: never;
-    post?: never;
+    post: operations["get-auth-signout"];
     delete?: never;
     options?: never;
     head?: never;
@@ -430,20 +412,20 @@ export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
     "data-team": {
-      id?: string;
-      name?: string;
-      leader_email?: string;
+      id: string;
+      name: string;
+      leader_email: string;
       title_id?: string;
-      category?: components["schemas"]["CategoryCapstone"];
-      period?: number;
+      category: components["schemas"]["CategoryCapstone"];
+      period: number;
       code?: string;
       member?: components["schemas"]["data-user-short"][];
     };
     "data-team-short": {
-      id?: string;
-      name?: string;
-      category?: components["schemas"]["CategoryCapstone"];
-      period?: number;
+      id: string;
+      name: string;
+      category: components["schemas"]["CategoryCapstone"];
+      period: number;
     };
     "data-team-new": {
       name: string;
@@ -463,43 +445,44 @@ export interface components {
       period: number;
     };
     "data-user": {
-      id?: string;
+      id: string;
       cv_url?: string;
       team_id?: string;
-      name?: string;
+      name: string;
       email?: string;
       google_id?: string;
     };
     "data-user-short": {
-      id?: string;
-      name?: string;
+      id: string;
+      name: string;
     };
     "data-submission": {
-      id?: string;
-      team_id?: string;
-      grand_design_url?: string;
-      team_target_id?: string;
-      accepted?: boolean;
+      id: string;
+      team_id: string;
+      grand_design_url: string;
+      team_target_id: string;
+      accepted: boolean;
     };
     "data-submission-short": {
-      id?: string;
-      team_id?: string;
-      team_target_id?: string;
+      id: string;
+      team_id: string;
+      team_target_id: string;
     };
     "data-title": {
-      id?: string;
-      title?: string;
-      desc?: string;
-      description?: string;
-      photo_url?: string;
+      id: string;
+      title: string;
+      desc: string;
+      description: string;
+      photo_url: string;
       proposal_url?: string;
-      is_taken?: boolean;
+      is_taken: boolean;
+      team_id: string;
     };
     "data-title-short": {
-      id?: string;
-      title?: string;
-      desc?: string;
-      photo_url?: string;
+      id: string;
+      title: string;
+      desc: string;
+      photo_url: string;
     };
     "signin-password-body": {
       email: string;
@@ -542,7 +525,6 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Fetches a list of all project titles from the previous period */
       200: {
         headers: {
           [name: string]: unknown;
@@ -976,13 +958,15 @@ export interface operations {
     };
     requestBody?: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "id": "123",
          *       "accept": false
-         *     } */
+         *     }
+         */
         "application/json": {
           id: string;
-          accept: string;
+          accept: boolean;
         };
       };
     };
@@ -1155,9 +1139,11 @@ export interface operations {
     };
     requestBody?: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "id": "123"
-         *     } */
+         *     }
+         */
         "application/json": {
           code: string;
         };
@@ -1268,7 +1254,8 @@ export interface operations {
     };
     requestBody?: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "new_period": true,
          *       "team_data": [
          *         {
@@ -1277,7 +1264,8 @@ export interface operations {
          *           "category": "Kesehatan"
          *         }
          *       ]
-         *     } */
+         *     }
+         */
         "application/json": {
           new_period?: boolean;
           team_data: components["schemas"]["data-team-new"][];
@@ -1436,6 +1424,33 @@ export interface operations {
       };
     };
   };
+  "get-user": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["data-user-short"][];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
+        };
+      };
+    };
+  };
   "patch-api-user": {
     parameters: {
       query?: never;
@@ -1498,33 +1513,6 @@ export interface operations {
       };
     };
   };
-  "get-user": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["data-user-short"][];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DefaultErrors"];
-        };
-      };
-    };
-  };
   "get-auth-signin-password": {
     parameters: {
       query?: never;
@@ -1534,10 +1522,12 @@ export interface operations {
     };
     requestBody?: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "email": "string",
          *       "password": "string"
-         *     } */
+         *     }
+         */
         "application/json": components["schemas"]["signin-password-body"];
       };
     };
@@ -1630,6 +1620,14 @@ export interface operations {
         };
         content: {
           "application/json": Record<string, never>;
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DefaultErrors"];
         };
       };
     };

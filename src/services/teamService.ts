@@ -2,8 +2,8 @@ import nodeCrypto from "node:crypto";
 import mongoose from "mongoose";
 import type { components } from "~/lib/api/schema.js";
 import { logger } from "~/lib/logger.js";
+import { TeamModel } from "~/models/class.js";
 import { ConfigModel } from "~/models/config.js";
-import { TeamModel } from "~/models/teams.js";
 import { type UserClass, UserModel } from "~/models/users.js";
 import type { retService } from "~/types/service.js";
 import {
@@ -45,11 +45,13 @@ export async function serviceGetTeamById(
     member: memberData,
   };
 
+  let teamToReturn: components["schemas"]["data-team"] = team;
   if (currentUser.team?._id.toString() !== id && !currentUser.is_admin) {
-    delete team.code;
+    teamToReturn = { ...team };
+    delete teamToReturn.code;
   }
 
-  return { success: 200, data: team };
+  return { success: 200, data: teamToReturn };
 }
 
 export async function serviceKickMemberTeam(userId: string, currentUser: UserClass): retService {

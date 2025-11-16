@@ -1,4 +1,5 @@
-import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import { modelOptions, prop, type Ref } from "@typegoose/typegoose";
+import { TeamsClass } from "./teams.js";
 
 @modelOptions({ schemaOptions: { collection: "titles" } })
 export class TitleClass {
@@ -24,6 +25,7 @@ export class TitleClass {
 
   @prop({ required: true, type: Boolean, default: false })
   public is_taken!: boolean;
-}
 
-export const TitleModel = getModelForClass(TitleClass);
+  @prop({ required: true, ref: () => TeamsClass })
+  public team!: Ref<TeamsClass>;
+}

@@ -1,9 +1,8 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
+import { TeamModel, TitleModel } from "~/models/class.js";
 import { ConfigModel } from "~/models/config.js";
 import { SubmissionModel } from "~/models/submissions.js";
-import { TeamModel } from "~/models/teams.js";
-import { TitleModel } from "~/models/titles.js";
 import { UserModel } from "~/models/users.js";
 
 let mongod: MongoMemoryServer;

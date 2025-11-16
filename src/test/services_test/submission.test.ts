@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
 import { afterEach, assert, beforeEach, describe, expect, it } from "vitest";
+import { TeamModel, TitleModel } from "~/models/class.js";
 import { ConfigModel } from "~/models/config.js";
 import { SubmissionModel } from "~/models/submissions.js";
-import { TeamModel } from "~/models/teams.js";
-import { TitleModel } from "~/models/titles.js";
 import { UserModel } from "~/models/users.js";
 import {
   serviceAdminDeleteSubmissionById,
@@ -223,7 +222,7 @@ describe("SubmissionService", () => {
       expect(result.success).toBe(201);
       assert(result.success === 201);
       expect(result.data!.grand_design_url).toBe(createSubmissionPayload.grand_design_url);
-      expect(result.data!.accepted).toBe(undefined);
+      expect(result.data!.accepted).toBe(false);
 
       // Verify submission was actually saved to database
       const savedSubmission = await SubmissionModel.findById(result.data!.id);

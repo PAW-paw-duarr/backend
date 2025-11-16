@@ -2,8 +2,8 @@ import argon2 from "argon2";
 import mongoose from "mongoose";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import type { components } from "~/lib/api/schema.js";
+import { TeamModel } from "~/models/class.js";
 import { ConfigModel } from "~/models/config.js";
-import { TeamModel } from "~/models/teams.js";
 import { UserModel } from "~/models/users.js";
 import {
   serviceAdminGetAllUsers,

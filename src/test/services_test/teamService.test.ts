@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 import { afterEach, assert, beforeEach, describe, expect, it } from "vitest";
+import { TeamModel, TitleModel } from "~/models/class.js";
 import { ConfigModel } from "~/models/config.js";
-import { TeamModel } from "~/models/teams.js";
-import { TitleModel } from "~/models/titles.js";
 import { UserModel } from "~/models/users.js";
 import {
   serviceAdminCreateTeams,
