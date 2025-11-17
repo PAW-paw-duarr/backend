@@ -7,12 +7,7 @@ const envSchema = z.object({
   MONGO_URL: z.url("Invalid MongoDB URL format"),
 
   DOMAIN: z.url("DOMAIN must be a valid URL").transform((val) => val.replace(/\/$/, "")),
-  URL: z.object({
-    protocol: z.string(),
-    hostname: z.string(),
-    port: z.string(),
-    baseUrl: z.url(),
-  }),
+  PORT: z.number().optional(),
 
   SECRET_KEY: z.string().min(32, "SECRET_KEY must be at least 32 characters long"),
   GOOGLE_CLIENT_ID: z.string(),
@@ -30,7 +25,7 @@ const env: z.infer<typeof envSchema> = envSchema.parse({
 
   MONGO_URL: process.env.MONGO_URL,
   DOMAIN: process.env.DOMAIN,
-  URL: parseUrl(process.env.DOMAIN || ""),
+  PORT: process.env.PORT ? Number(process.env.PORT) : 3000,
 
   SECRET_KEY: process.env.SECRET_KEY,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
@@ -56,28 +51,6 @@ export function validateEnv(): boolean {
     }
     return false;
   }
-}
-
-function parseUrl(urlString: string) {
-  let url: URL;
-  try {
-    url = new URL(urlString);
-  } catch {
-    throw new Error("DOMAIN must be a valid URL");
-  }
-
-  let port = url.port;
-  if (!port) {
-    if (url.protocol === "http:") port = "80";
-    if (url.protocol === "https:") port = "443";
-  }
-
-  return {
-    protocol: url.protocol.replace(":", ""),
-    hostname: url.hostname,
-    port,
-    baseUrl: url.origin,
-  };
 }
 
 export default env;

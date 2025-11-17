@@ -19,7 +19,6 @@ export const sessionMiddleware = session({
   store: MongoStore.create({ mongoUrl: env.MONGO_URL }),
   cookie: {
     httpOnly: true,
-    domain: env.URL.hostname,
     secure: env.IS_PROD,
     sameSite: "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
@@ -30,7 +29,7 @@ export const sessionMiddleware = session({
 export const oauth2Client = new OAuth2Client({
   clientId: env.GOOGLE_CLIENT_ID,
   clientSecret: env.GOOGLE_CLIENT_SECRET,
-  redirectUri: `${env.URL.baseUrl}/api/auth/google/callback`,
+  redirectUri: `${env.DOMAIN}/api/auth/google/callback`,
 });
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
