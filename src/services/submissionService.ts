@@ -62,7 +62,7 @@ export async function serviceGetSubmissionById(
     team_id: data.team._id.toString(),
     grand_design_url: data.grand_design_url,
     team_target_id: data.team_target._id.toString(),
-    accepted: data.accepted || false,
+    accepted: data.accepted,
   };
 
   return { success: 200, data: submissionData };
@@ -101,7 +101,7 @@ export async function serviceResponseSubmission(
     team_id: data.team._id.toString(),
     grand_design_url: data.grand_design_url,
     team_target_id: data.team_target._id.toString(),
-    accepted: data.accepted || false,
+    accepted: data.accepted,
   };
 
   return { success: 200, data: submission };
@@ -229,7 +229,7 @@ export async function serviceAdminGetSubmissionById(
     team_id: data.team._id.toString(),
     grand_design_url: data.grand_design_url,
     team_target_id: data.team_target._id.toString(),
-    accepted: data.accepted || false,
+    accepted: data.accepted,
   };
 
   return { success: 200, data: submissionData };
